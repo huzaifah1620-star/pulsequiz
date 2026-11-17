@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PulseQuiz // Cyber-Pop Quiz Arcade</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Fredoka"', 'sans-serif'],
+          },
+          colors: {
+            cyber: {
+              bg: '#070812',
+              card: '#101326',
+              surface: '#181c38',
+              pink: '#ff2a85',
+              cyan: '#00f5d4',
+              purple: '#8b5cf6',
+              yellow: '#fee440'
+            }
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'pop-in': 'popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+            'slide-up': 'slideUp 0.35s ease-out forwards',
+            'shake': 'shake 0.4s ease-in-out both'
+          },
+          keyframes: {
+            float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-14px)' } },
+            popIn: { '0%': { opacity: '0', transform: 'scale(0.85)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+            slideUp: { '0%': { opacity: '0', transform: 'translateY(18px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            shake: { '10%, 90%': { transform: 'translateX(-3px)' }, '20%, 80%': { transform: 'translateX(5px)' }, '30%, 50%, 70%': { transform: 'translateX(-6px)' }, '40%, 60%': { transform: 'translateX(6px)' } }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #070812; color: #f8fafc; overflow-x: hidden; }
+    .glass-panel { background: rgba(16, 19, 38, 0.78); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .glass-card { background: linear-gradient(145deg, rgba(24, 28, 56, 0.88), rgba(14, 17, 34, 0.94)); border: 1px solid rgba(255, 255, 255, 0.08); transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.25s ease; }
+    .glass-card:hover { transform: translateY(-4px) scale(1.01); border-color: rgba(0, 245, 212, 0.45); }
+    .btn-arcade { transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 4px 0 rgba(0,0,0,0.45); }
+    .btn-arcade:hover:not(:disabled) { transform: translateY(-2px) scale(1.02); }
+    .btn-arcade:active:not(:disabled) { transform: translateY(2px) scale(0.98); box-shadow: 0 1px 0 rgba(0,0,0,0.45); }
+    @keyframes avatarBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px) scaleY(1.03); } }
+    .avatar-animated { animation: avatarBob 2.4s ease-in-out infinite; }
+    #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 100; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col relative">
+  <!-- Confetti Canvas & Ambient Orbs -->
+  <canvas id="confetti-canvas"></canvas>
+  <div class="fixed -top-28 -left-28 w-80 h-80 bg-cyber-pink/20 rounded-full blur-[110px] pointer-events-none animate-float"></div>
+  <div class="fixed bottom-0 -right-28 w-80 h-80 bg-cyber-cyan/15 rounded-full blur-[110px] pointer-events-none animate-float"></div>
+
+  <!-- Toast Stack -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Top Header -->
+  <header class="sticky top-0 z-40 glass-panel border-b border-white/10 px-4 sm:px-8 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <button onclick="navigateTo('discover')" class="flex items-center gap-2.5 text-left">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyber-pink via-cyber-purple to-cyber-cyan p-[2px]">
+          <div class="w-full h-full bg-cyber-bg rounded-[10px] flex items-center justify-center text-xl">⚡</div>
+        </div>
+        <div>
+          <h1 class="font-display font-bold text-xl sm:text-2xl bg-gradient-to-r from-white via-cyber-cyan to-cyber-pink bg-clip-text text-transparent">PULSEQUIZ</h1>
+          <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold hidden sm:block">Cyber Quiz Arcade</p>
+        </div>
+      </button>
+
+      <!-- Desktop Nav -->
+      <nav class="hidden md:flex items-center bg-cyber-bg/75 p-1 rounded-2xl border border-white/10 gap-1">
+        <button onclick="navigateTo('discover')" data-nav="discover" class="nav-pill px-4 py-2 rounded-xl text-sm font-bold transition">🕹️ Discover</button>
+        <button onclick="navigateTo('studio')" data-nav="studio" class="nav-pill px-4 py-2 rounded-xl text-sm font-bold transition">✨ Create Quiz</button>
+        <button onclick="navigateTo('profile')" data-nav="profile" class="nav-pill px-4 py-2 rounded-xl text-sm font-bold transition">🎨 Avatar Studio</button>
+      </nav>
+
+      <!-- Sound & User Area -->
+      <div class="flex items-center gap-2.5">
+        <button id="sound-btn" onclick="toggleSound()" class="w-10 h-10 rounded-xl bg-cyber-surface border border-white/10 flex items-center justify-center text-base hover:scale-105 transition" title="Toggle Sound">🔊</button>
+        <div id="header-user-area"></div>
+      </div>
+    </div>
+
+    <!-- Mobile Nav -->
+    <div class="flex md:hidden items-center justify-around mt-2.5 pt-2 border-t border-white/10 gap-1">
+      <button onclick="navigateTo('discover')" data-nav="discover" class="nav-pill flex-1 py-1.5 rounded-xl text-xs font-bold">🕹️ Discover</button>
+      <button onclick="navigateTo('studio')" data-nav="studio" class="nav-pill flex-1 py-1.5 rounded-xl text-xs font-bold">✨ Create</button>
+      <button onclick="navigateTo('profile')" data-nav="profile" class="nav-pill flex-1 py-1.5 rounded-xl text-xs font-bold">🎨 Avatar</button>
+    </div>
+  </header>
+
+  <!-- Main Content Stage -->
+  <main id="app-stage" class="flex-1 relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8"></main>
+
+  <!-- Sign In / Account Modal -->
+  <div id="auth-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="glass-panel w-full max-w-lg rounded-3xl border border-cyber-cyan/30 overflow-hidden animate-pop-in shadow-2xl">
+      <div class="p-5 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-cyber-pink/15 to-cyber-cyan/15">
+        <div>
+          <span class="text-[11px] font-extrabold uppercase tracking-widest text-cyber-cyan">Arcade Identity</span>
+          <h2 class="font-display text-2xl font-bold text-white">Sign In or Create Profile</h2>
+        </div>
+        <button onclick="closeAuthModal()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300">✕</button>
+      </div>
+
+      <div class="p-6 space-y-5">
+        <!-- Real Firebase Google Sign-In Button -->
+        <button type="button" id="google-signin-btn" onclick="signInWithRealGoogle()"
+          class="btn-arcade w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm sm:text-base flex items-center justify-center gap-3 shadow-lg">
+          <svg class="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z"/>
+            <path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z"/>
+          </svg>
+          <span>Continue with Real Google (Gmail)</span>
+        </button>
+
+        <!-- Domain / File Notice Alert -->
+        <div id="firebase-domain-alert" class="hidden p-4 rounded-2xl bg-amber-500/15 border border-amber-400/40 text-amber-100 text-xs space-y-1.5">
+          <div class="font-extrabold text-amber-300" id="firebase-alert-title">Domain Authorization Required</div>
+          <p id="firebase-alert-body" class="leading-relaxed"></p>
+        </div>
+
+        <div class="relative flex items-center">
+          <div class="flex-grow border-t border-white/10"></div>
+          <span class="mx-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Or Local Arcade Pass</span>
+          <div class="flex-grow border-t border-white/10"></div>
+        </div>
+
+        <!-- Local Profile / Guest Form -->
+        <form onsubmit="handleLocalAccountSubmit(event)" class="space-y-4">
+          <div class="flex items-center gap-4 bg-cyber-bg/75 p-3.5 rounded-2xl border border-white/10">
+            <div id="modal-avatar-box" class="w-20 h-20 shrink-0 avatar-animated"></div>
+            <div class="flex-1 space-y-2">
+              <input type="text" id="local-username" required maxlength="18" placeholder="Enter Gamer Tag (e.g. TurboKing)"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-cyber-surface border border-white/15 focus:border-cyber-cyan focus:outline-none text-sm font-bold text-white" />
+              <button type="button" onclick="randomizeModalAvatar()" class="text-xs font-bold text-cyber-cyan hover:underline">🎲 Randomize Avatar</button>
+            </div>
+          </div>
+
+          <div class="flex gap-2.5">
+            <button type="submit" class="btn-arcade flex-1 py-3 rounded-2xl bg-gradient-to-r from-cyber-cyan to-emerald-400 text-cyber-bg font-display font-bold text-base">
+              Save Local Profile ⚡
+            </button>
+            <button type="button" onclick="activateGuestPass()" class="btn-arcade px-4 py-3 rounded-2xl bg-cyber-surface border border-white/15 text-white font-bold text-xs">
+              Instant Guest
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase v10 Modular SDK + App Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    // 1. Live Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBuzSuvoGXOk_fkK_qfieYW7n1Ur6IP48s",
+      authDomain: "pulsequiz-app.firebaseapp.com",
+      projectId: "pulsequiz-app",
+      storageBucket: "pulsequiz-app.firebasestorage.app",
+      messagingSenderId: "1080157550386",
+      appId: "1:1080157550386:web:3766b2d3170aa2ca9ac92b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+    // 2. Web Audio Synth SFX
+    let soundEnabled = true;
+    let audioCtx = null;
+    function playTone(freq, type = 'triangle', dur = 0.15, vol = 0.12, delay = 0) {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime + delay;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(vol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + dur);
+      } catch (e) {}
+    }
+    const sfx = {
+      pop: () => playTone(540, 'triangle', 0.08, 0.1),
+      correct: (s = 1) => {
+        const b = Math.min(s * 35, 210);
+        playTone(523 + b, 'triangle', 0.14, 0.14, 0);
+        playTone(659 + b, 'triangle', 0.18, 0.14, 0.08);
+        playTone(784 + b, 'sine', 0.24, 0.15, 0.16);
+      },
+      wrong: () => { playTone(185, 'sawtooth', 0.18, 0.12, 0); playTone(140, 'sawtooth', 0.25, 0.12, 0.12); },
+      win: () => [523, 659, 784, 1046].forEach((n, i) => playTone(n, 'triangle', 0.25, 0.14, i * 0.1))
+    };
+
+    window.toggleSound = () => {
+      soundEnabled = !soundEnabled;
+      document.getElementById('sound-btn').textContent = soundEnabled ? '🔊' : '🔇';
+      if (soundEnabled) sfx.pop();
+    };
+
+    // 3. Custom SVG Avatar Studio
+    const AVATAR_OPTS = {
+      chassis: ['cyberbot', 'neoncat', 'staralien', 'slime'],
+      colors: [
+        { id: 'cyan', p: '#00f5d4', s: '#00bbf9' },
+        { id: 'pink', p: '#ff2a85', s: '#f15bb5' },
+        { id: 'purple', p: '#9b5de5', s: '#6d28d9' },
+        { id: 'gold', p: '#fee440', s: '#ff9f1c' }
+      ],
+      visors: ['happy', 'cybervisor', 'shades', 'stars'],
+      headgear: ['none', 'crown', 'headphones', 'antenna']
+    };
+
+    function randomAvatar() {
+      const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+      return {
+        chassis: pick(AVATAR_OPTS.chassis),
+        color: pick(AVATAR_OPTS.colors).id,
+        visor: pick(AVATAR_OPTS.visors),
+        headgear: pick(AVATAR_OPTS.headgear)
+      };
+    }
+
+    window.renderAvatarSVG = (cfg = {}, cls = 'w-full h-full') => {
+      const c = { chassis: 'cyberbot', color: 'cyan', visor: 'happy', headgear: 'headphones', ...cfg };
+      const pal = AVATAR_OPTS.colors.find(x => x.id === c.color) || AVATAR_OPTS.colors[0];
+      const uid = Math.random().toString(36).slice(2, 7);
+
+      let body = `<rect x="24" y="34" width="72" height="64" rx="20" fill="url(#g-${uid})" stroke="#fff" stroke-width="3"/><rect x="33" y="45" width="54" height="36" rx="12" fill="#0d1024"/>`;
+      if (c.chassis === 'neoncat') {
+        body = `<polygon points="26,48 32,20 52,36" fill="${pal.s}" stroke="#fff" stroke-width="2.5"/><polygon points="94,48 88,20 68,36" fill="${pal.s}" stroke="#fff" stroke-width="2.5"/><circle cx="60" cy="66" r="36" fill="url(#g-${uid})" stroke="#fff" stroke-width="3"/>`;
+      } else if (c.chassis === 'staralien') {
+        body = `<path d="M60,28 C85,28 98,46 92,70 C87,90 73,102 60,102 C47,102 33,90 28,70 C22,46 35,28 60,28 Z" fill="url(#g-${uid})" stroke="#fff" stroke-width="3"/>`;
+      } else if (c.chassis === 'slime') {
+        body = `<path d="M24,78 C20,48 36,30 60,30 C84,30 100,48 96,78 C93,95 78,100 60,100 C42,100 27,95 24,78 Z" fill="url(#g-${uid})" stroke="#fff" stroke-width="3"/>`;
+      }
+
+      let eyes = `<circle cx="47" cy="62" r="6" fill="#fff"/><circle cx="73" cy="62" r="6" fill="#fff"/><path d="M52,75 Q60,83 68,75" stroke="#fff" stroke-width="3.5" stroke-linecap="round" fill="none"/>`;
+      if (c.visor === 'cybervisor') {
+        eyes = `<rect x="34" y="53" width="52" height="16" rx="8" fill="#ff2a85" stroke="#fff" stroke-width="2"/><line x1="42" y1="61" x2="78" y2="61" stroke="#fee440" stroke-width="3" stroke-linecap="round"/>`;
+      } else if (c.visor === 'shades') {
+        eyes = `<rect x="33" y="54" width="24" height="14" rx="3" fill="#070812" stroke="#00f5d4" stroke-width="2"/><rect x="63" y="54" width="24" height="14" rx="3" fill="#070812" stroke="#00f5d4" stroke-width="2"/><line x1="57" y1="59" x2="63" y2="59" stroke="#00f5d4" stroke-width="3"/>`;
+      } else if (c.visor === 'stars') {
+        eyes = `<text x="40" y="68" font-size="17" fill="#fee440">★</text><text x="66" y="68" font-size="17" fill="#fee440">★</text>`;
+      }
+
+      let hat = '';
+      if (c.headgear === 'crown') hat = `<polygon points="38,32 43,14 53,25 60,11 67,25 77,14 82,32" fill="#fee440" stroke="#ff7b00" stroke-width="2.5"/>`;
+      else if (c.headgear === 'headphones') hat = `<path d="M22,60 C22,26 98,26 98,60" fill="none" stroke="#ff2a85" stroke-width="6"/><rect x="13" y="48" width="12" height="24" rx="6" fill="#00f5d4"/><rect x="95" y="48" width="12" height="24" rx="6" fill="#00f5d4"/>`;
+      else if (c.headgear === 'antenna') hat = `<line x1="60" y1="30" x2="60" y2="13" stroke="#fff" stroke-width="3.5"/><circle cx="60" cy="11" r="6" fill="#ff2a85"/>`;
+
+      return `<svg viewBox="0 0 120 115" class="${cls}" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g-${uid}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${pal.p}"/><stop offset="100%" stop-color="${pal.s}"/></linearGradient></defs>${body}${eyes}${hat}</svg>`;
+    };
+
+    // 4. Starter Quizzes & State
+    const STARTER_QUIZZES = [
+      {
+        id: 'supercar-lore',
+        title: 'Ultimate Supercar & Car Lore',
+        category: 'Cars',
+        emoji: '🏎️',
+        gradient: 'from-rose-600 via-red-600 to-amber-500',
+        authorName: 'ApexTurbo',
+        authorAvatar: { chassis: 'cyberbot', color: 'pink', visor: 'cybervisor', headgear: 'crown' },
+        questions: [
+          { question: 'Which Italian supercar manufacturer features a raging bull on its badge?', options: ['Lamborghini', 'Ferrari', 'Maserati', 'Pagani'], correctIndex: 0, timeLimit: 12 },
+          { question: 'What does "GT" stand for in legendary cars like the Ford GT or Nissan GT-R?', options: ['Gran Turismo', 'Gear Turbo', 'Grand Track', 'Gas Turbine'], correctIndex: 0, timeLimit: 12 },
+          { question: 'Which brand produced the famous "Supra" sports car icon in the 1990s?', options: ['Toyota', 'Nissan', 'Mazda', 'Honda'], correctIndex: 0, timeLimit: 12 },
+          { question: 'Which hypercar was the first production car to officially break 300 mph?', options: ['Bugatti Chiron Super Sport 300+', 'Koenigsegg Jesko', 'Hennessey Venom F5', 'Rimac Nevera'], correctIndex: 0, timeLimit: 14 },
+          { question: 'What does "ABS" stand for in a car\'s safety system?', options: ['Anti-lock Braking System', 'Automatic Balance Steering', 'Active Boost Suspension', 'Air Brake Sensor'], correctIndex: 0, timeLimit: 12 }
+        ]
+      },
+      {
+        id: 'gamer-space-trivia',
+        title: 'Gamer & Space Trivia',
+        category: 'Gaming & Space',
+        emoji: '🚀',
+        gradient: 'from-violet-600 via-indigo-600 to-cyan-500',
+        authorName: 'StarByte',
+        authorAvatar: { chassis: 'neoncat', color: 'cyan', visor: 'shades', headgear: 'headphones' },
+        questions: [
+          { question: 'Which game was originally called "Cave Game" during its first week of development?', options: ['Minecraft', 'Terraria', 'Roblox', 'Fortnite'], correctIndex: 0, timeLimit: 10 },
+          { question: 'On which planet does a single day last longer than its entire year?', options: ['Venus', 'Mercury', 'Mars', 'Neptune'], correctIndex: 0, timeLimit: 12 },
+          { question: 'Which Nintendo character was originally named "Jumpman" in 1981?', options: ['Mario', 'Link', 'Sonic', 'Kirby'], correctIndex: 0, timeLimit: 10 },
+          { question: 'What is the hottest planet in our solar system?', options: ['Venus', 'Mercury', 'Mars', 'Jupiter'], correctIndex: 0, timeLimit: 12 }
+        ]
+      }
+    ];
+
+    const KEYS = { USER: 'pulsequiz_user_v3', QUIZZES: 'pulsequiz_quizzes_v3', AVATARS: 'pulsequiz_avatars_v3' };
+    const state = {
+      view: 'discover',
+      user: JSON.parse(localStorage.getItem(KEYS.USER) || 'null'),
+      quizzes: [],
+      modalAvatar: randomAvatar(),
+      activeQuiz: null,
+      session: null,
+      draft: {
+        title: '',
+        category: 'Cars',
+        questions: [
+          { question: '', options: ['', '', '', ''], correctIndex: 0, timeLimit: 12 },
+          { question: '', options: ['', '', '', ''], correctIndex: 0, timeLimit: 12 }
+        ]
+      }
+    };
+
+    function getSavedAvatarForUid(uid) {
+      const map = JSON.parse(localStorage.getItem(KEYS.AVATARS) || '{}');
+      return map[uid] || { chassis: 'cyberbot', color: 'cyan', visor: 'happy', headgear: 'headphones' };
+    }
+
+    function saveAvatarForUid(uid, avatar) {
+      const map = JSON.parse(localStorage.getItem(KEYS.AVATARS) || '{}');
+      map[uid] = avatar;
+      localStorage.setItem(KEYS.AVATARS, JSON.stringify(map));
+    }
+
+    function loadQuizzes() {
+      const custom = JSON.parse(localStorage.getItem(KEYS.QUIZZES) || '[]');
+      state.quizzes = [...custom, ...STARTER_QUIZZES];
+    }
+
+    function persistUser(u) {
+      state.user = u;
+      if (u) {
+        localStorage.setItem(KEYS.USER, JSON.stringify(u));
+        saveAvatarForUid(u.uid, u.avatar);
+      } else {
+        localStorage.removeItem(KEYS.USER);
+      }
+      renderHeader();
+    }
+
+    // 5. Real Firebase Auth Persistence & Popup Sign-In
+    onAuthStateChanged(auth, (fbUser) => {
+      if (fbUser) {
+        const existing = JSON.parse(localStorage.getItem(KEYS.USER) || 'null');
+        const profile = {
+          uid: fbUser.uid,
+          username: fbUser.displayName || (fbUser.email ? fbUser.email.split('@')[0] : 'GmailPlayer'),
+          email: fbUser.email || '',
+          isGoogle: true,
+          avatar: getSavedAvatarForUid(fbUser.uid),
+          xp: (existing && existing.uid === fbUser.uid) ? existing.xp : 250
+        };
+        persistUser(profile);
+        renderView();
+      }
+    });
+
+    window.signInWithRealGoogle = async () => {
+      sfx.pop();
+      const btn = document.getElementById('google-signin-btn');
+      const alertBox = document.getElementById('firebase-domain-alert');
+      const alertTitle = document.getElementById('firebase-alert-title');
+      const alertBody = document.getElementById('firebase-alert-body');
+      alertBox.classList.add('hidden');
+
+      if (window.location.protocol === 'file:') {
+        alertTitle.textContent = 'Local File (file://) Detected';
+        alertBody.innerHTML = 'Google Sign-In requires an <strong>http://</strong> or <strong>https://</strong> URL. Upload this HTML file to Netlify, Vercel, or GitHub Pages, then add that domain in <strong>Firebase Console → Authentication → Settings → Authorized domains</strong>. You can use <strong>Local Arcade Pass</strong> below to test right now!';
+        alertBox.classList.remove('hidden');
+        sfx.wrong();
+        return;
+      }
+
+      const prevHTML = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span>⚡ Connecting to Google...</span>';
+
+      try {
+        const res = await signInWithPopup(auth, googleProvider);
+        const u = res.user;
+        const profile = {
+          uid: u.uid,
+          username: u.displayName || (u.email ? u.email.split('@')[0] : 'GmailPlayer'),
+          email: u.email || '',
+          isGoogle: true,
+          avatar: getSavedAvatarForUid(u.uid),
+          xp: 250
+        };
+        persistUser(profile);
+        closeAuthModal();
+        sfx.win();
+        launchConfetti(50);
+        showToast(`Signed in as ${profile.email}`, 'success');
+        renderView();
+      } catch (err) {
+        sfx.wrong();
+        if (err.code === 'auth/unauthorized-domain') {
+          const host = window.location.hostname || 'this domain';
+          alertTitle.textContent = `Authorize "${host}" in Firebase`;
+          alertBody.innerHTML = `Open <strong>Firebase Console → Authentication → Settings → Authorized domains</strong> and add <code class="px-1.5 py-0.5 rounded bg-black/40 text-amber-300 font-mono">${host}</code>. Then click Continue with Google again!`;
+          alertBox.classList.remove('hidden');
+        } else if (err.code !== 'auth/popup-closed-by-user') {
+          alertTitle.textContent = 'Google Sign-In Notice';
+          alertBody.textContent = err.message || 'Popup blocked or unavailable in this preview frame. Try Local Arcade Pass below or host on HTTPS.';
+          alertBox.classList.remove('hidden');
+        }
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = prevHTML;
+      }
+    };
+
+    window.openAuthModal = () => {
+      sfx.pop();
+      document.getElementById('firebase-domain-alert').classList.add('hidden');
+      document.getElementById('modal-avatar-box').innerHTML = renderAvatarSVG(state.modalAvatar);
+      const m = document.getElementById('auth-modal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    };
+
+    window.closeAuthModal = () => {
+      const m = document.getElementById('auth-modal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    };
+
+    window.randomizeModalAvatar = () => {
+      sfx.pop();
+      state.modalAvatar = randomAvatar();
+      document.getElementById('modal-avatar-box').innerHTML = renderAvatarSVG(state.modalAvatar);
+    };
+
+    window.handleLocalAccountSubmit = (e) => {
+      e.preventDefault();
+      const name = document.getElementById('local-username').value.trim() || 'CyberDriver';
+      const uid = 'local-' + name.toLowerCase().replace(/\s+/g, '-');
+      persistUser({ uid, username: name, email: `${name.toLowerCase()}@local.arcade`, isGoogle: false, avatar: state.modalAvatar, xp: 150 });
+      closeAuthModal();
+      sfx.win();
+      showToast(`Welcome, ${name}!`, 'success');
+      renderView();
+    };
+
+    window.activateGuestPass = () => {
+      const num = Math.floor(100 + Math.random() * 899);
+      const uid = 'guest-' + num;
+      persistUser({ uid, username: `Guest${num}`, email: 'guest@pulsequiz.app', isGoogle: false, avatar: randomAvatar(), xp: 100 });
+      closeAuthModal();
+      sfx.win();
+      showToast(`Guest${num} ready to play!`, 'success');
+      renderView();
+    };
+
+    window.logoutUser = async () => {
+      try { await signOut(auth); } catch (e) {}
+      persistUser(null);
+      showToast('Signed out', 'info');
+      renderView();
+    };
+
+    // 6. UI Helpers & Navigation
+    window.showToast = (msg, type = 'info') => {
+      const c = document.getElementById('toast-container');
+      const cls = type === 'success' ? 'border-emerald-400/50 bg-emerald-950/90 text-emerald-100'
+                : type === 'error' ? 'border-rose-500/50 bg-rose-950/90 text-rose-100'
+                : 'border-cyber-cyan/50 bg-cyber-card/95 text-white';
+      const el = document.createElement('div');
+      el.className = `px-4 py-2.5 rounded-xl border text-xs sm:text-sm font-bold shadow-xl animate-pop-in ${cls}`;
+      el.textContent = msg;
+      c.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    };
+
+    function escapeHTML(str = '') {
+      return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    function renderHeader() {
+      const area = document.getElementById('header-user-area');
+      if (!state.user) {
+        area.innerHTML = `<button onclick="openAuthModal()" class="btn-arcade px-4 py-2 rounded-xl bg-gradient-to-r from-cyber-pink via-cyber-purple to-cyber-cyan text-white font-bold text-xs sm:text-sm">🔐 Sign In</button>`;
+        return;
+      }
+      area.innerHTML = `
+        <div class="flex items-center gap-2">
+          <button onclick="navigateTo('profile')" class="flex items-center gap-2 pl-2 pr-3 py-1 rounded-xl bg-cyber-surface border border-white/10 hover:border-cyber-cyan/40 transition">
+            <div class="w-7 h-7">${renderAvatarSVG(state.user.avatar)}</div>
+            <div class="text-left hidden sm:block">
+              <div class="text-xs font-extrabold text-white flex items-center gap-1">
+                <span>${escapeHTML(state.user.username)}</span>
+                ${state.user.isGoogle ? '<span class="px-1 rounded bg-emerald-500/20 text-emerald-300 text-[9px]">GMAIL</span>' : ''}
+              </div>
+              <div class="text-[10px] text-cyber-yellow font-bold">${state.user.xp || 0} XP</div>
+            </div>
+          </button>
+          <button onclick="logoutUser()" title="Sign Out" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-rose-500/20 border border-white/10 text-xs">🚪</button>
+        </div>
+      `;
+    }
+
+    window.navigateTo = (view) => {
+      sfx.pop();
+      state.view = view;
+      document.querySelectorAll('.nav-pill').forEach(btn => {
+        const active = btn.dataset.nav === view;
+        btn.classList.toggle('bg-gradient-to-r', active);
+        btn.classList.toggle('from-cyber-pink', active);
+        btn.classList.toggle('to-cyber-purple', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('text-slate-400', !active);
+      });
+      renderView();
+    };
+
+    // 7. Views: Discover, Play, Studio, Avatar Profile
+    function renderView() {
+      const stage = document.getElementById('app-stage');
+      if (state.view === 'discover') renderDiscover(stage);
+      else if (state.view === 'play') renderPlay(stage);
+      else if (state.view === 'studio') renderStudio(stage);
+      else if (state.view === 'profile') renderProfile(stage);
+    }
+
+    function renderDiscover(stage) {
+      stage.innerHTML = `
+        <div class="space-y-8 animate-slide-up">
+          <section class="glass-panel rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-cyber-cyan/25">
+            <div class="space-y-3 max-w-xl">
+              <span class="px-3 py-1 rounded-full bg-cyber-cyan/15 border border-cyber-cyan/30 text-cyber-cyan text-xs font-extrabold">🔥 LIVE FIREBASE GMAIL + QUIZ ARCADE</span>
+              <h2 class="font-display text-3xl sm:text-4xl font-bold text-white leading-tight">
+                Race the Clock & <span class="bg-gradient-to-r from-cyber-cyan via-cyber-pink to-cyber-yellow bg-clip-text text-transparent">Publish Your Own Quizzes!</span>
+              </h2>
+              <p class="text-slate-300 text-sm">Sign in with your real Gmail account, build your cyber avatar, and challenge friends with custom quizzes.</p>
+              <div class="flex flex-wrap gap-3 pt-1">
+                <button onclick="startQuiz('supercar-lore')" class="btn-arcade px-5 py-3 rounded-2xl bg-gradient-to-r from-cyber-cyan to-emerald-400 text-cyber-bg font-display font-bold text-sm">🏎️ Play Supercar Lore</button>
+                <button onclick="navigateTo('studio')" class="btn-arcade px-5 py-3 rounded-2xl bg-cyber-surface border border-white/15 text-white font-bold text-sm">✨ Create Quiz</button>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 bg-cyber-bg/75 p-4 rounded-2xl border border-white/10">
+              <div class="w-20 h-20 avatar-animated">${renderAvatarSVG(state.user ? state.user.avatar : { chassis: 'cyberbot', color: 'pink', visor: 'cybervisor', headgear: 'crown' })}</div>
+              <div>
+                <div class="text-[11px] font-bold uppercase text-cyber-pink">${state.user ? 'Active Player' : 'Not Signed In'}</div>
+                <div class="font-display text-lg font-bold text-white">${state.user ? escapeHTML(state.user.username) : 'Join the Arcade'}</div>
+                <div class="text-xs text-slate-400">${state.user ? escapeHTML(state.user.email) : 'Connect Gmail or Guest'}</div>
+                <button onclick="${state.user ? "navigateTo('profile')" : "openAuthModal()"}" class="mt-2 px-3 py-1 rounded-lg bg-cyber-pink/20 border border-cyber-pink/40 text-cyber-pink text-xs font-extrabold">
+                  ${state.user ? 'Edit Avatar →' : 'Sign In →'}
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            ${state.quizzes.map(q => `
+              <div class="glass-card rounded-3xl overflow-hidden flex flex-col justify-between">
+                <div>
+                  <div class="h-28 bg-gradient-to-r ${q.gradient || 'from-cyber-pink to-cyber-purple'} p-5 flex items-center justify-between">
+                    <span class="px-3 py-1 rounded-full bg-black/40 text-white text-xs font-extrabold">${escapeHTML(q.category)}</span>
+                    <span class="text-5xl">${q.emoji || '⚡'}</span>
+                  </div>
+                  <div class="p-5 space-y-2">
+                    <h3 class="font-display text-xl font-bold text-white">${escapeHTML(q.title)}</h3>
+                    <div class="flex items-center justify-between text-xs text-slate-400">
+                      <span class="flex items-center gap-2"><span class="w-5 h-5 inline-block">${renderAvatarSVG(q.authorAvatar)}</span> ${escapeHTML(q.authorName)}</span>
+                      <span>${q.questions.length} Questions</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="px-5 pb-5">
+                  <button onclick="startQuiz('${q.id}')" class="btn-arcade w-full py-3 rounded-2xl bg-cyber-surface hover:bg-cyber-cyan hover:text-cyber-bg text-white font-display font-bold text-sm transition">▶ Launch Quiz</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // 8. Quiz Gameplay Engine
+    let timerId = null;
+    window.startQuiz = (id) => {
+      const q = state.quizzes.find(x => x.id === id);
+      if (!q) return;
+      sfx.pop();
+      clearInterval(timerId);
+      state.activeQuiz = q;
+      state.session = { idx: 0, score: 0, streak: 0, correct: 0, answered: false, picked: null, timeLeft: q.questions[0].timeLimit || 12, done: false };
+      state.view = 'play';
+      renderView();
+      runTimer();
+    };
+
+    function runTimer() {
+      clearInterval(timerId);
+      timerId = setInterval(() => {
+        if (!state.session || state.session.answered || state.session.done) return;
+        state.session.timeLeft -= 1;
+        const el = document.getElementById('q-timer');
+        if (el) el.textContent = `${Math.max(0, state.session.timeLeft)}s`;
+        if (state.session.timeLeft <= 0) answerQuestion(-1);
+      }, 1000);
+    }
+
+    window.answerQuestion = (choice) => {
+      const s = state.session;
+      if (!s || s.answered) return;
+      clearInterval(timerId);
+      const q = state.activeQuiz.questions[s.idx];
+      s.answered = true;
+      s.picked = choice;
+      if (choice === q.correctIndex) {
+        s.streak += 1;
+        s.correct += 1;
+        s.score += Math.round((150 + Math.max(0, s.timeLeft * 12)) * (1 + (s.streak - 1) * 0.25));
+        sfx.correct(s.streak);
+      } else {
+        s.streak = 0;
+        sfx.wrong();
+      }
+      renderView();
+    };
+
+    window.nextQuestion = () => {
+      sfx.pop();
+      const s = state.session;
+      if (s.idx + 1 < state.activeQuiz.questions.length) {
+        s.idx += 1;
+        s.answered = false;
+        s.picked = null;
+        s.timeLeft = state.activeQuiz.questions[s.idx].timeLimit || 12;
+        renderView();
+        runTimer();
+      } else {
+        s.done = true;
+        const xpGain = Math.max(50, Math.round(s.score / 4));
+        s.xpGain = xpGain;
+        if (state.user) {
+          state.user.xp = (state.user.xp || 0) + xpGain;
+          persistUser(state.user);
+        }
+        sfx.win();
+        if (s.correct >= Math.ceil(state.activeQuiz.questions.length / 2)) launchConfetti(70);
+        renderView();
+      }
+    };
+
+    function renderPlay(stage) {
+      const quiz = state.activeQuiz;
+      const s = state.session;
+      if (!quiz || !s) return navigateTo('discover');
+
+      if (s.done) {
+        stage.innerHTML = `
+          <div class="max-w-lg mx-auto glass-panel rounded-3xl p-8 text-center space-y-5 animate-pop-in border border-cyber-cyan/30">
+            <div class="w-24 h-24 mx-auto avatar-animated">${renderAvatarSVG(state.user ? state.user.avatar : {})}</div>
+            <h2 class="font-display text-3xl font-bold text-white">Quiz Complete! 🏆</h2>
+            <p class="text-slate-300 text-sm">${escapeHTML(quiz.title)}</p>
+            <div class="grid grid-cols-3 gap-3">
+              <div class="p-3 rounded-2xl bg-cyber-bg/80"><div class="text-[10px] text-slate-400 font-bold">SCORE</div><div class="font-display text-xl font-bold text-cyber-cyan">${s.score}</div></div>
+              <div class="p-3 rounded-2xl bg-cyber-bg/80"><div class="text-[10px] text-slate-400 font-bold">CORRECT</div><div class="font-display text-xl font-bold text-cyber-pink">${s.correct}/${quiz.questions.length}</div></div>
+              <div class="p-3 rounded-2xl bg-cyber-bg/80"><div class="text-[10px] text-slate-400 font-bold">XP</div><div class="font-display text-xl font-bold text-cyber-yellow">+${s.xpGain}</div></div>
+            </div>
+            <div class="flex gap-3 justify-center pt-2">
+              <button onclick="startQuiz('${quiz.id}')" class="btn-arcade px-5 py-3 rounded-2xl bg-gradient-to-r from-cyber-cyan to-emerald-400 text-cyber-bg font-display font-bold text-sm">🔄 Play Again</button>
+              <button onclick="navigateTo('discover')" class="btn-arcade px-5 py-3 rounded-2xl bg-cyber-surface border border-white/15 text-white font-bold text-sm">🕹️ Arcade</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const q = quiz.questions[s.idx];
+      stage.innerHTML = `
+        <div class="max-w-2xl mx-auto space-y-5 animate-slide-up">
+          <div class="glass-panel rounded-2xl p-4 flex items-center justify-between">
+            <button onclick="navigateTo('discover')" class="px-3 py-1 rounded-xl bg-white/10 text-xs font-bold">← Exit</button>
+            <div class="flex gap-4 text-xs sm:text-sm font-extrabold">
+              <span>Q ${s.idx + 1}/${quiz.questions.length}</span>
+              <span class="text-cyber-yellow">🔥 ${s.streak}x</span>
+              <span class="text-cyber-cyan">⚡ ${s.score}</span>
+            </div>
+            <div id="q-timer" class="font-display text-lg font-bold text-cyber-pink">${s.timeLeft}s</div>
+          </div>
+
+          <div class="glass-panel rounded-3xl p-6 sm:p-8 space-y-6 ${s.answered && s.picked !== q.correctIndex ? 'animate-shake' : ''}">
+            <h2 class="font-display text-2xl font-bold text-white">${escapeHTML(q.question)}</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              ${q.options.map((opt, i) => {
+                let st = 'bg-cyber-surface hover:bg-white/15 border-white/10 text-white';
+                if (s.answered) {
+                  if (i === q.correctIndex) st = 'bg-emerald-500/30 border-emerald-400 text-emerald-100';
+                  else if (i === s.picked) st = 'bg-rose-500/30 border-rose-400 text-rose-100';
+                  else st = 'bg-cyber-bg/50 border-white/5 text-slate-500 opacity-60';
+                }
+                return `<button ${s.answered ? 'disabled' : ''} onclick="answerQuestion(${i})" class="p-4 rounded-2xl border text-left font-bold text-sm transition ${st}">${['A','B','C','D'][i]}. ${escapeHTML(opt)}</button>`;
+              }).join('')}
+            </div>
+            ${s.answered ? `<div class="flex justify-end"><button onclick="nextQuestion()" class="btn-arcade px-6 py-3 rounded-2xl bg-gradient-to-r from-cyber-pink to-cyber-purple text-white font-display font-bold text-sm">${s.idx + 1 < quiz.questions.length ? 'Next Question →' : 'Finish Quiz 🏆'}</button></div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // 9. Quiz Creator Studio & Avatar Studio
+    function renderStudio(stage) {
+      if (!state.user) {
+        stage.innerHTML = `
+          <div class="max-w-md mx-auto glass-panel rounded-3xl p-8 text-center space-y-4 animate-pop-in">
+            <div class="text-4xl">🔐</div>
+            <h2 class="font-display text-2xl font-bold text-white">Sign In to Post Quizzes</h2>
+            <p class="text-slate-300 text-sm">Connect your Google/Gmail account or create a local profile to publish quizzes.</p>
+            <button onclick="openAuthModal()" class="btn-arcade px-6 py-3 rounded-2xl bg-gradient-to-r from-cyber-pink to-cyber-cyan text-white font-display font-bold text-sm">Sign In Now ⚡</button>
+          </div>
+        `;
+        return;
+      }
+      const d = state.draft;
+      stage.innerHTML = `
+        <div class="max-w-3xl mx-auto glass-panel rounded-3xl p-6 sm:p-8 space-y-5 animate-slide-up">
+          <div class="flex items-center justify-between border-b border-white/10 pb-4">
+            <h2 class="font-display text-2xl font-bold text-white">✨ Quiz Creator Studio</h2>
+            <span class="text-xs text-cyber-cyan font-bold">Posting as ${escapeHTML(state.user.username)}</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input type="text" value="${escapeHTML(d.title)}" oninput="state.draft.title=this.value" placeholder="Quiz Title (e.g. JDM Legends)" class="sm:col-span-2 px-4 py-3 rounded-xl bg-cyber-bg border border-white/15 text-sm font-bold text-white" />
+            <select onchange="state.draft.category=this.value" class="px-4 py-3 rounded-xl bg-cyber-bg border border-white/15 text-sm font-bold text-white">
+              ${['Cars', 'Gaming', 'Science', 'Pop Culture'].map(c => `<option value="${c}" ${d.category===c?'selected':''}>${c}</option>`).join('')}
+            </select>
+          </div>
+          <div class="space-y-4">
+            ${d.questions.map((q, qi) => `
+              <div class="p-4 rounded-2xl bg-cyber-bg/80 border border-white/10 space-y-3">
+                <div class="flex justify-between text-xs font-bold text-cyber-pink">
+                  <span>Question #${qi + 1}</span>
+                  ${d.questions.length > 1 ? `<button onclick="removeDraftQ(${qi})" class="text-rose-400">Remove</button>` : ''}
+                </div>
+                <input type="text" value="${escapeHTML(q.question)}" oninput="state.draft.questions[${qi}].question=this.value" placeholder="Enter question..." class="w-full px-3.5 py-2 rounded-xl bg-cyber-surface border border-white/10 text-sm text-white" />
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  ${q.options.map((o, oi) => `
+                    <div class="flex items-center gap-2">
+                      <input type="radio" name="c-${qi}" ${q.correctIndex===oi?'checked':''} onchange="state.draft.questions[${qi}].correctIndex=${oi}" class="accent-emerald-400" />
+                      <input type="text" value="${escapeHTML(o)}" oninput="state.draft.questions[${qi}].options[${oi}]=this.value" placeholder="Option ${oi + 1}" class="flex-1 px-3 py-2 rounded-xl bg-cyber-surface border border-white/10 text-xs text-white" />
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="flex justify-between pt-2">
+            <button onclick="addDraftQ()" class="btn-arcade px-4 py-2.5 rounded-xl bg-cyber-surface border border-white/15 text-cyber-cyan text-xs font-bold">+ Add Question</button>
+            <button onclick="publishDraft()" class="btn-arcade px-6 py-3 rounded-2xl bg-gradient-to-r from-cyber-cyan to-emerald-400 text-cyber-bg font-display font-bold text-sm">🚀 Publish Quiz</button>
+          </div>
+        </div>
+      `;
+    }
+
+    window.addDraftQ = () => { state.draft.questions.push({ question: '', options: ['', '', '', ''], correctIndex: 0, timeLimit: 12 }); renderView(); };
+    window.removeDraftQ = (i) => { state.draft.questions.splice(i, 1); renderView(); };
+    window.publishDraft = () => {
+      const d = state.draft;
+      const valid = d.questions.filter(q => q.question.trim() && q.options.every(o => o.trim()));
+      if (!d.title.trim() || !valid.length) return showToast('Add a title and at least 1 full question!', 'error');
+      const custom = JSON.parse(localStorage.getItem(KEYS.QUIZZES) || '[]');
+      custom.unshift({
+        id: 'custom-' + Date.now(),
+        title: d.title.trim(),
+        category: d.category,
+        emoji: d.category === 'Cars' ? '🏎️' : '⚡',
+        gradient: 'from-cyber-pink via-cyber-purple to-cyber-cyan',
+        authorName: state.user.username,
+        authorAvatar: state.user.avatar,
+        questions: valid
+      });
+      localStorage.setItem(KEYS.QUIZZES, JSON.stringify(custom));
+      loadQuizzes();
+      state.draft = { title: '', category: 'Cars', questions: [{ question: '', options: ['', '', '', ''], correctIndex: 0, timeLimit: 12 }] };
+      sfx.win();
+      launchConfetti(60);
+      showToast('Quiz published to Discover!', 'success');
+      navigateTo('discover');
+    };
+
+    function renderProfile(stage) {
+      if (!state.user) return openAuthModal();
+      const av = state.user.avatar;
+      stage.innerHTML = `
+        <div class="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up">
+          <div class="glass-panel rounded-3xl p-6 text-center space-y-3">
+            <div class="w-32 h-32 mx-auto avatar-animated">${renderAvatarSVG(av)}</div>
+            <h3 class="font-display text-xl font-bold text-white">${escapeHTML(state.user.username)}</h3>
+            <p class="text-xs text-cyber-cyan">${escapeHTML(state.user.email)}</p>
+            <div class="p-3 rounded-2xl bg-cyber-bg/80 text-cyber-yellow font-display font-bold">${state.user.xp || 0} XP</div>
+          </div>
+          <div class="md:col-span-2 glass-panel rounded-3xl p-6 space-y-4">
+            <div class="flex justify-between items-center">
+              <h2 class="font-display text-2xl font-bold text-white">🎨 Avatar Customizer</h2>
+              <button onclick="setAvatarProp('random')" class="px-3 py-1.5 rounded-xl bg-cyber-surface text-xs font-bold text-cyber-cyan">🎲 Randomize</button>
+            </div>
+            ${[
+              ['Chassis', 'chassis', AVATAR_OPTS.chassis],
+              ['Neon Core', 'color', AVATAR_OPTS.colors.map(c => c.id)],
+              ['Visor', 'visor', AVATAR_OPTS.visors],
+              ['Headgear', 'headgear', AVATAR_OPTS.headgear]
+            ].map(([label, prop, list]) => `
+              <div>
+                <div class="text-xs font-bold uppercase text-slate-400 mb-1.5">${label}</div>
+                <div class="flex flex-wrap gap-2">
+                  ${list.map(val => `<button onclick="setAvatarProp('${prop}','${val}')" class="px-3 py-1.5 rounded-xl text-xs font-bold capitalize border ${av[prop]===val?'bg-gradient-to-r from-cyber-pink to-cyber-purple text-white border-transparent':'bg-cyber-bg text-slate-300 border-white/10'}">${val}</button>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    window.setAvatarProp = (prop, val) => {
+      if (!state.user) return;
+      sfx.pop();
+      state.user.avatar = prop === 'random' ? randomAvatar() : { ...state.user.avatar, [prop]: val };
+      persistUser(state.user);
+      renderView();
+    };
+
+    // 10. Confetti FX & Boot
+    window.launchConfetti = (count = 60) => {
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const pieces = Array.from({ length: count }, () => ({
+        x: canvas.width / 2, y: canvas.height / 2,
+        vx: (Math.random() - 0.5) * 14, vy: -Math.random() * 14 - 4,
+        size: Math.random() * 7 + 4,
+        color: ['#00f5d4', '#ff2a85', '#fee440', '#8b5cf6'][Math.floor(Math.random() * 4)]
+      }));
+      let f = 0;
+      (function step() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.45; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size); });
+        if (++f < 90) requestAnimationFrame(step);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
+      })();
+    };
+
+    loadQuizzes();
+    renderHeader();
+    navigateTo('discover');
+  </script>
+</body>
+</html>
