@@ -1,252 +1,1603 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PulseQuiz - Cyber-Pop Arcade & Studio</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #0b0f19; color: #f8fafc; overflow-x: hidden; }
-        .font-display { font-family: 'Space Grotesk', sans-serif; }
-        .cyber-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(236, 72, 153, 0.3); box-shadow: 0 0 25px rgba(236, 72, 153, 0.1); }
-        .neon-glow { text-shadow: 0 0 15px rgba(236, 72, 153, 0.6); }
-        .cyber-button { background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); transition: all 0.2s ease; }
-        .cyber-button:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(236, 72, 153, 0.5); }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PulseQuiz • Cyber-Pop Quiz Arcade</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Space Grotesk & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+          },
+          colors: {
+            cyber: {
+              bg: '#070711',
+              card: '#111126',
+              cardLight: '#181836',
+              border: '#272752',
+              pink: '#ff2a85',
+              cyan: '#00f0ff',
+              purple: '#9d4edd',
+              lime: '#39ff14',
+              amber: '#ffb703'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Cyber-Pop Animated Grid & Ambient Neon Orbs */
+    body {
+      background-color: #070711;
+      color: #f8fafc;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .cyber-grid-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background-image:
+        linear-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 42, 133, 0.06) 1px, transparent 1px);
+      background-size: 42px 42px;
+      animation: gridDrift 24s linear infinite;
+    }
+
+    @keyframes gridDrift {
+      0% { background-position: 0 0, 0 0; }
+      100% { background-position: 42px 42px, 42px 42px; }
+    }
+
+    .orb-pink {
+      position: fixed;
+      top: -12%;
+      left: -8%;
+      width: 460px;
+      height: 460px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, rgba(255, 42, 133, 0.22) 0%, transparent 70%);
+      filter: blur(40px);
+      z-index: -1;
+      pointer-events: none;
+      animation: orbFloat 10s ease-in-out infinite alternate;
+    }
+
+    .orb-cyan {
+      position: fixed;
+      bottom: -14%;
+      right: -8%;
+      width: 500px;
+      height: 500px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.20) 0%, transparent 70%);
+      filter: blur(45px);
+      z-index: -1;
+      pointer-events: none;
+      animation: orbFloat 12s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes orbFloat {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(35px, -30px) scale(1.12); }
+    }
+
+    /* Glassmorphic Cards & Neon Glows */
+    .glass-card {
+      background: rgba(17, 17, 38, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(39, 39, 82, 0.9);
+    }
+
+    .neon-glow-pink {
+      box-shadow: 0 0 24px rgba(255, 42, 133, 0.35);
+    }
+    .neon-glow-cyan {
+      box-shadow: 0 0 24px rgba(0, 240, 255, 0.32);
+    }
+    .neon-text-gradient {
+      background: linear-gradient(90deg, #00f0ff 0%, #ff2a85 55%, #9d4edd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Smooth View & Card Animations */
+    @keyframes viewSlideIn {
+      0% { opacity: 0; transform: translateY(14px) scale(0.985); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-view {
+      animation: viewSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes shakeWrong {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-7px); }
+      40%, 80% { transform: translateX(7px); }
+    }
+    .animate-shake {
+      animation: shakeWrong 0.36s ease-in-out;
+    }
+
+    @keyframes pulsePop {
+      0% { transform: scale(0.95); }
+      50% { transform: scale(1.04); }
+      100% { transform: scale(1); }
+    }
+    .animate-pop {
+      animation: pulsePop 0.28s ease-out;
+    }
+
+    /* Confetti Canvas */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 60;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #070711; }
+    ::-webkit-scrollbar-thumb { background: #272752; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #ff2a85; }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-pink-500 selection:text-white">
+<body class="antialiased selection:bg-cyber-pink selection:text-white flex flex-col">
 
-    <!-- HEADER -->
-    <header class="w-full border-b border-gray-800 bg-gray-950/80 backdrop-blur sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
-        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('lobby')">
-            <span class="text-3xl">⚡</span>
-            <h1 class="text-2xl font-display font-bold tracking-wider bg-gradient-to-r from-pink-500 to-purple-400 bg-clip-text text-transparent">PULSEQUIZ</h1>
+  <!-- Animated Ambient Background & Confetti Layer -->
+  <div class="cyber-grid-bg"></div>
+  <div class="orb-pink"></div>
+  <div class="orb-cyan"></div>
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Toast Notification Stack -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- ==================== STICKY HEADER ==================== -->
+  <header class="sticky top-0 z-40 backdrop-blur-xl bg-cyber-bg/80 border-b border-cyber-border">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+      <!-- Brand Logo -->
+      <button onclick="navigate('lobby')" class="flex items-center gap-2.5 group focus:outline-none">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyber-pink via-cyber-purple to-cyber-cyan flex items-center justify-center text-cyber-bg font-display font-extrabold text-lg shadow-lg group-hover:scale-105 transition-transform">
+          <i class="fa-solid fa-bolt"></i>
         </div>
-        <div id="auth-container" class="flex items-center space-x-4">
-            <button id="auth-btn" onclick="handleAuth()" class="cyber-button px-5 py-2 rounded-xl font-bold text-sm text-white flex items-center space-x-2">
-                <span>Sign in with Google</span>
+        <span class="font-display font-extrabold text-xl sm:text-2xl tracking-tight">
+          Pulse<span class="neon-text-gradient">Quiz</span>
+        </span>
+      </button>
+
+      <!-- Right Controls: Sound, Create Quiz, Google Auth -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Mute / Unmute Toggle -->
+        <button id="sound-toggle-btn" onclick="toggleSound()" title="Toggle Synthesizer Sound Effects"
+          class="p-2.5 rounded-xl glass-card text-cyber-cyan hover:border-cyber-cyan transition-all">
+          <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+        </button>
+
+        <!-- Studio Button -->
+        <button onclick="navigate('create')"
+          class="px-3.5 py-2 rounded-xl bg-cyber-pink/15 border border-cyber-pink/60 text-cyber-pink hover:bg-cyber-pink hover:text-white font-bold text-xs sm:text-sm transition-all flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i>
+          <span class="hidden sm:inline">Quiz Studio</span>
+        </button>
+
+        <!-- Real Firebase Google Auth Area -->
+        <div id="auth-area" class="flex items-center">
+          <button onclick="handleGoogleSignIn()"
+            class="px-3.5 py-2 rounded-xl bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 shadow-md">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-4 h-4" onerror="this.style.display='none'">
+            <span>Sign in with Google</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN SPA CONTAINER ==================== -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
+
+    <!-- ==================== VIEW 1: ARCADE LOBBY ==================== -->
+    <section id="view-lobby" class="animate-view space-y-8">
+      <!-- Hero Banner -->
+      <div class="relative overflow-hidden rounded-3xl glass-card p-6 sm:p-10 shadow-2xl border-cyber-purple/40">
+        <div class="absolute -top-20 -right-20 w-72 h-72 bg-cyber-pink/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-20 -left-20 w-72 h-72 bg-cyber-cyan/15 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div class="space-y-3 max-w-2xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan text-xs font-bold uppercase tracking-wider">
+              <span class="w-2 h-2 rounded-full bg-cyber-cyan animate-ping"></span>
+              Cyber-Pop Quiz Arcade • Live Cloud Auth
+            </div>
+            <h1 class="font-display font-extrabold text-3xl sm:text-5xl leading-tight">
+              Think Fast. Build Multipliers. <br />
+              <span class="neon-text-gradient">Rule the Neon Arena.</span>
+            </h1>
+            <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+              Race the 15-second pulse clock to stack up to <strong>4x combo multipliers</strong>, or launch the Quiz Studio to craft and publish your own custom decks under your Google profile.
+            </p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0">
+            <button onclick="navigate('create')"
+              class="px-6 py-4 rounded-2xl bg-gradient-to-r from-cyber-pink via-cyber-purple to-cyber-cyan text-white font-display font-extrabold text-base hover:opacity-95 transition-all neon-glow-pink flex items-center justify-center gap-2.5">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              Create Custom Quiz
             </button>
+          </div>
         </div>
-    </header>
+      </div>
 
-    <!-- MAIN APP CONTAINER -->
-    <main class="max-w-4xl w-full mx-auto p-6 my-auto">
-        <!-- LOBBY VIEW -->
-        <div id="view-lobby" class="space-y-8">
-            <div class="cyber-card p-8 rounded-3xl text-center space-y-4">
-                <h2 class="text-4xl font-display font-extrabold neon-glow">Welcome to the Arcade</h2>
-                <p class="text-gray-400 max-w-lg mx-auto">Play interactive community quizzes, race against the 15-second timer, and build your own custom quizzes with real-time cloud saving!</p>
-                <div class="flex justify-center gap-4 pt-4">
-                    <button onclick="switchView('studio')" class="cyber-button px-8 py-3 rounded-xl font-bold text-lg text-white">Create New Quiz 🚀</button>
-                </div>
-            </div>
+      <!-- Category Filter Pills & Deck Count -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-2 overflow-x-auto pb-1" id="category-filters">
+          <button onclick="filterCategory('All')" data-cat="All" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-cyber-cyan text-cyber-bg transition-all shrink-0">All Arenas</button>
+          <button onclick="filterCategory('Tech & Gaming')" data-cat="Tech & Gaming" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0">Tech & Gaming</button>
+          <button onclick="filterCategory('Science & Space')" data-cat="Science & Space" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0">Science & Space</button>
+          <button onclick="filterCategory('World Trivia')" data-cat="World Trivia" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0">World Trivia</button>
+          <button onclick="filterCategory('Pop Culture')" data-cat="Pop Culture" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0">Pop Culture</button>
+          <button onclick="filterCategory('Custom')" data-cat="Custom" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0">Community Decks</button>
+        </div>
+        <div class="text-xs text-slate-400 font-semibold shrink-0">
+          <span id="quiz-count" class="text-cyber-cyan font-bold">0</span> playable quizzes
+        </div>
+      </div>
 
-            <div class="space-y-4">
-                <h3 class="text-xl font-display font-bold text-pink-400">Available Quizzes</h3>
-                <div id="quiz-list" class="grid gap-4 md:grid-cols-2">
-                    <!-- Populated dynamically -->
-                </div>
+      <!-- Quiz Decks Grid -->
+      <div id="quiz-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Lobby Top-5 Hall of Fame Preview -->
+      <div class="rounded-3xl glass-card p-6 sm:p-8 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-display font-extrabold text-xl flex items-center gap-2.5">
+            <i class="fa-solid fa-crown text-cyber-amber"></i>
+            <span>Arcade Hall of Fame</span>
+          </h2>
+          <span class="text-xs font-semibold text-slate-400">Local Top 5 High Scores</span>
+        </div>
+        <div id="lobby-leaderboard" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 2: FULL QUIZ STUDIO BUILDER ==================== -->
+    <section id="view-create" class="hidden animate-view max-w-4xl mx-auto space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="font-display font-extrabold text-2xl sm:text-3xl">
+            Quiz Studio <span class="text-cyber-pink">Builder</span>
+          </h2>
+          <p class="text-slate-400 text-sm">Click A, B, C, or D to set the right answer, reorder questions, and publish.</p>
+        </div>
+        <button onclick="navigate('lobby')" class="px-4 py-2 rounded-xl glass-card text-slate-300 hover:text-white hover:border-cyber-cyan text-sm font-bold transition-all">
+          <i class="fa-solid fa-arrow-left mr-1.5"></i> Back to Lobby
+        </button>
+      </div>
+
+      <!-- Quiz Metadata Settings -->
+      <div class="rounded-3xl glass-card p-6 space-y-5 shadow-xl">
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
+          <div class="sm:col-span-6 space-y-1.5">
+            <label for="quiz-title-input" class="block text-xs font-bold uppercase tracking-wider text-cyber-cyan">Quiz Title *</label>
+            <input id="quiz-title-input" type="text" placeholder="e.g., Neon Cyberpunk Legends"
+              class="w-full px-4 py-3 rounded-xl bg-cyber-bg/90 border border-cyber-border text-white placeholder-slate-500 focus:outline-none focus:border-cyber-cyan transition-colors" />
+          </div>
+          <div class="sm:col-span-3 space-y-1.5">
+            <label for="quiz-category-input" class="block text-xs font-bold uppercase tracking-wider text-cyber-pink">Category</label>
+            <select id="quiz-category-input"
+              class="w-full px-4 py-3 rounded-xl bg-cyber-bg/90 border border-cyber-border text-white focus:outline-none focus:border-cyber-pink transition-colors">
+              <option value="Custom">Custom</option>
+              <option value="Tech & Gaming">Tech & Gaming</option>
+              <option value="Science & Space">Science & Space</option>
+              <option value="World Trivia">World Trivia</option>
+              <option value="Pop Culture">Pop Culture</option>
+            </select>
+          </div>
+          <div class="sm:col-span-3 space-y-1.5">
+            <label for="quiz-difficulty-input" class="block text-xs font-bold uppercase tracking-wider text-cyber-amber">Difficulty</label>
+            <select id="quiz-difficulty-input"
+              class="w-full px-4 py-3 rounded-xl bg-cyber-bg/90 border border-cyber-border text-white focus:outline-none focus:border-cyber-amber transition-colors">
+              <option value="Easy">Easy</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Cards Stack -->
+      <div id="builder-questions-list" class="space-y-6">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Studio Footer Controls -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 pb-12">
+        <button type="button" onclick="addBuilderQuestion()"
+          class="w-full sm:w-auto px-6 py-3.5 rounded-2xl glass-card border-2 border-dashed border-cyber-cyan/60 text-cyber-cyan hover:bg-cyber-cyan/10 font-bold text-sm transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-plus-circle"></i>
+          Add Question
+        </button>
+
+        <button type="button" onclick="saveCreatedQuiz()"
+          class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-cyber-pink to-cyber-purple text-white font-display font-extrabold text-base hover:opacity-95 transition-all neon-glow-pink flex items-center justify-center gap-2.5">
+          <i class="fa-solid fa-rocket"></i>
+          Save & Publish Quiz
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: ARCADE GAMEPLAY MODE ==================== -->
+    <section id="view-play" class="hidden animate-view max-w-3xl mx-auto space-y-6">
+      <!-- Top HUD -->
+      <div class="rounded-2xl glass-card p-4 flex flex-wrap items-center justify-between gap-4 shadow-lg">
+        <div class="flex items-center gap-3">
+          <button onclick="exitQuiz()" class="p-2.5 rounded-xl bg-cyber-bg border border-cyber-border text-slate-400 hover:text-white hover:border-cyber-pink transition-colors" title="Exit to Lobby">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+          <div>
+            <div id="play-quiz-title" class="font-display font-bold text-sm sm:text-base text-white line-clamp-1">Quiz Title</div>
+            <div class="text-xs text-slate-400">
+              Question <span id="play-q-current" class="text-cyber-cyan font-bold">1</span> of <span id="play-q-total">4</span>
             </div>
+          </div>
         </div>
 
-        <!-- STUDIO VIEW -->
-        <div id="view-studio" class="hidden space-y-6">
-            <div class="cyber-card p-8 rounded-3xl space-y-6">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-2xl font-display font-bold text-pink-400">Quiz Studio Builder</h2>
-                    <button onclick="switchView('lobby')" class="text-gray-400 hover:text-white">✕ Cancel</button>
-                </div>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-300 mb-1">Quiz Title</label>
-                        <input type="text" id="studio-title" placeholder="e.g. Cyberpunk Trivia Master" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500">
-                    </div>
-                    <div id="studio-questions" class="space-y-6"></div>
-                    <button onclick="addStudioQuestion()" class="w-full py-3 rounded-xl border border-dashed border-gray-700 hover:border-pink-500 text-gray-400 hover:text-pink-400 font-semibold transition">+ Add Question</button>
-                </div>
-                <button onclick="saveStudioQuiz()" class="w-full cyber-button py-4 rounded-xl font-bold text-lg text-white">Save & Publish Quiz 💾</button>
-            </div>
+        <!-- Multiplier & Score HUD -->
+        <div class="flex items-center gap-2.5">
+          <div id="streak-badge" class="px-3 py-1.5 rounded-xl bg-cyber-amber/15 border border-cyber-amber/50 text-cyber-amber text-xs font-extrabold flex items-center gap-1.5 transition-transform">
+            <i class="fa-solid fa-fire"></i>
+            <span id="play-multiplier">1x</span>
+            <span class="hidden sm:inline text-[11px] opacity-80">(<span id="play-streak">0</span> streak)</span>
+          </div>
+          <div class="px-4 py-1.5 rounded-xl bg-cyber-cyan/15 border border-cyber-cyan/50 text-cyber-cyan font-display font-extrabold text-sm">
+            <span id="play-score">0</span> PTS
+          </div>
+        </div>
+      </div>
+
+      <!-- 15-Second Visual Countdown Timer Bar -->
+      <div class="space-y-1.5">
+        <div class="flex justify-between text-xs font-bold">
+          <span class="text-slate-400 uppercase tracking-wider">Pulse Timer</span>
+          <span id="play-timer-text" class="text-cyber-cyan">15s</span>
+        </div>
+        <div class="w-full h-3.5 rounded-full bg-cyber-card border border-cyber-border overflow-hidden p-0.5">
+          <div id="play-timer-bar" class="h-full rounded-full bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-pink transition-all duration-100" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <!-- Active Question Arena Card -->
+      <div class="rounded-3xl glass-card p-6 sm:p-10 shadow-2xl space-y-8 border-cyber-purple/40">
+        <h3 id="play-question-text" class="font-display font-bold text-xl sm:text-3xl text-center leading-snug">
+          Loading question...
+        </h3>
+
+        <!-- 4 Answer Choices -->
+        <div id="play-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Populated dynamically -->
         </div>
 
-        <!-- GAMEPLAY VIEW -->
-        <div id="view-game" class="hidden space-y-6">
-            <div class="cyber-card p-8 rounded-3xl space-y-6">
-                <div class="flex justify-between items-center">
-                    <button onclick="switchView('lobby')" class="text-gray-400 hover:text-white">← Exit to Lobby</button>
-                    <span id="game-progress" class="text-pink-400 font-bold">Question 1/3</span>
-                </div>
-                <div id="timer-bar" class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                    <div id="timer-fill" class="bg-pink-500 h-full w-full transition-all duration-1000"></div>
-                </div>
-                <h3 id="game-question" class="text-2xl font-display font-bold">Question text goes here?</h3>
-                <div id="game-options" class="grid gap-4"></div>
-            </div>
+        <!-- Instant Feedback & Next Button -->
+        <div id="play-feedback-area" class="hidden pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-cyber-border">
+          <div id="play-feedback-msg" class="font-display font-bold text-sm sm:text-base flex items-center gap-2"></div>
+          <button id="play-next-btn" onclick="nextQuestion()"
+            class="w-full sm:w-auto px-6 py-3 rounded-xl bg-cyber-cyan text-cyber-bg font-display font-extrabold text-sm hover:opacity-90 transition-all shadow-lg">
+            Next Question <i class="fa-solid fa-arrow-right ml-1.5"></i>
+          </button>
         </div>
-    </main>
+      </div>
+    </section>
 
-    <!-- FOOTER -->
-    <footer class="text-center py-6 text-xs text-gray-500 border-t border-gray-900">
-        PulseQuiz Engine • Powered by Firebase Cloud & GitHub Pages
-    </footer>
+    <!-- ==================== VIEW 4: END-OF-QUIZ SUMMARY & LEADERBOARD ==================== -->
+    <section id="view-results" class="hidden animate-view max-w-2xl mx-auto space-y-6 text-center">
+      <div class="rounded-3xl glass-card p-8 sm:p-10 shadow-2xl space-y-6 relative overflow-hidden border-cyber-cyan/40">
+        <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-tr from-cyber-amber via-cyber-pink to-cyber-purple flex items-center justify-center text-4xl text-white shadow-xl">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
 
-    <!-- FIREBASE & APP SCRIPT -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        <div class="space-y-2">
+          <div class="text-xs font-bold uppercase tracking-widest text-cyber-cyan">Arena Run Complete</div>
+          <h2 id="result-title" class="font-display font-extrabold text-3xl sm:text-4xl">Cyber Champion!</h2>
+          <p id="result-subtitle" class="text-slate-300 text-sm">You dominated the neon grid.</p>
+        </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCeN3pbvANI4qqdaivt4CKlD4PNcqcEDl4",
-            authDomain: "pulsequiz-a5da1.firebaseapp.com",
-            projectId: "pulsequiz-a5da1",
-            storageBucket: "pulsequiz-a5da1.firebasestorage.app",
-            messagingSenderId: "668679540827",
-            appId: "1:668679540827:web:67202298f3821197fc6f7e",
-            measurementId: "G-K46F6R2GC5"
+        <!-- Score Breakdown Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+          <div class="p-3.5 rounded-2xl bg-cyber-bg/90 border border-cyber-border">
+            <div class="text-[11px] text-slate-400 font-semibold uppercase">Total Score</div>
+            <div id="result-score" class="font-display font-extrabold text-xl text-cyber-cyan mt-1">0</div>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-cyber-bg/90 border border-cyber-border">
+            <div class="text-[11px] text-slate-400 font-semibold uppercase">Accuracy</div>
+            <div id="result-accuracy" class="font-display font-extrabold text-xl text-cyber-lime mt-1">0%</div>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-cyber-bg/90 border border-cyber-border">
+            <div class="text-[11px] text-slate-400 font-semibold uppercase">Peak Combo</div>
+            <div id="result-streak" class="font-display font-extrabold text-xl text-cyber-amber mt-1">1x</div>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-cyber-bg/90 border border-cyber-border">
+            <div class="text-[11px] text-slate-400 font-semibold uppercase">Speed Bonus</div>
+            <div id="result-speed-bonus" class="font-display font-extrabold text-xl text-cyber-pink mt-1">+0</div>
+          </div>
+        </div>
+
+        <!-- Top 5 Local High-Score Leaderboard -->
+        <div class="text-left bg-cyber-bg/90 rounded-2xl border border-cyber-border p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-display font-bold text-sm uppercase tracking-wider text-slate-200">
+              <i class="fa-solid fa-crown text-cyber-amber mr-1.5"></i> Top 5 High Scores
+            </h4>
+            <span class="text-xs text-slate-500">Saved Locally</span>
+          </div>
+          <div id="leaderboard-list" class="space-y-2 text-sm">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Replay & Lobby Actions -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <button id="replay-btn" class="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-cyber-pink to-cyber-purple text-white font-display font-extrabold text-base hover:opacity-95 transition-all neon-glow-pink">
+            <i class="fa-solid fa-rotate-right mr-2"></i> Replay Arena
+          </button>
+          <button onclick="navigate('lobby')" class="flex-1 py-3.5 rounded-2xl bg-cyber-bg border border-cyber-border text-white font-display font-extrabold text-base hover:border-cyber-cyan transition-all">
+            <i class="fa-solid fa-grid-2 mr-2"></i> Back to Lobby
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-cyber-border/70 py-5 text-center text-xs text-slate-500">
+    PulseQuiz Cyber-Pop Arcade • Powered by Firebase Auth & Web Audio Synthesizer
+  </footer>
+
+  <!-- ==================== APPLICATION & FIREBASE MODULE SCRIPT ==================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    /**
+     * ============================================================================
+     * 1. REAL FIREBASE GOOGLE AUTHENTICATION (Project: pulsequiz-a5da1)
+     * ============================================================================
+     */
+    const firebaseConfig = {
+      apiKey: "AIzaSyCeN3pbvANI4qqdaivt4CKlD4PNcqcEDl4",
+      authDomain: "pulsequiz-a5da1.firebaseapp.com",
+      projectId: "pulsequiz-a5da1",
+      storageBucket: "pulsequiz-a5da1.firebasestorage.app",
+      messagingSenderId: "668679540827",
+      appId: "1:668679540827:web:67202298f3821197fc6f7e",
+      measurementId: "G-K46F6R2GC5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = {
+          uid: user.uid,
+          displayName: user.displayName || user.email.split('@')[0],
+          email: user.email,
+          photoURL: user.photoURL
         };
+      } else {
+        currentUser = null;
+      }
+      renderAuthUI();
+    });
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+    window.handleGoogleSignIn = async function () {
+      playSound('click');
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        showToast(`Welcome, ${result.user.displayName || result.user.email}!`, 'success');
+      } catch (error) {
+        console.error("Google Auth Error:", error);
+        if (error.code === 'auth/unauthorized-domain') {
+          showToast("Domain unauthorized! Add 'huzaifah1620-star.github.io' in Firebase Authentication -> Settings -> Authorized domains.", "error");
+        } else if (error.code === 'auth/popup-closed-by-user') {
+          showToast("Sign-in popup closed before finishing.", "info");
+        } else {
+          showToast(`Auth error: ${error.message}`, "error");
+        }
+      }
+    };
 
-        window.currentUser = null;
+    window.handleSignOut = async function () {
+      playSound('click');
+      try {
+        await signOut(auth);
+        showToast("Signed out of Google account.", "info");
+      } catch (err) {
+        showToast("Could not sign out: " + err.message, "error");
+      }
+    };
 
-        window.handleAuth = async () => {
-            if (window.currentUser) {
-                await signOut(auth);
-            } else {
-                try {
-                    await signInWithPopup(auth, provider);
-                } catch (error) {
-                    alert("Auth error: " + error.message);
-                }
-            }
-        };
+    function renderAuthUI() {
+      const authArea = document.getElementById('auth-area');
+      if (!currentUser) {
+        authArea.innerHTML = `
+          <button onclick="handleGoogleSignIn()"
+            class="px-3.5 py-2 rounded-xl bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 shadow-md">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-4 h-4" onerror="this.style.display='none'">
+            <span>Sign in with Google</span>
+          </button>
+        `;
+      } else {
+        const avatarHTML = currentUser.photoURL
+          ? `<img src="${escapeAttr(currentUser.photoURL)}" alt="Avatar" referrerpolicy="no-referrer" class="w-7 h-7 rounded-full border border-cyber-cyan object-cover">`
+          : `<div class="w-7 h-7 rounded-full bg-gradient-to-tr from-cyber-cyan to-cyber-pink flex items-center justify-center text-xs font-extrabold text-cyber-bg">${escapeHTML(currentUser.displayName[0].toUpperCase())}</div>`;
 
-        onAuthStateChanged(auth, (user) => {
-            window.currentUser = user;
-            const btn = document.getElementById('auth-btn');
-            if (user) {
-                btn.innerHTML = `<img src="${user.photoURL || ''}" class="w-6 h-6 rounded-full inline mr-2"><span>${user.displayName || 'Signed In'}</span>`;
-            } else {
-                btn.innerHTML = `<span>Sign in with Google</span>`;
-            }
+        authArea.innerHTML = `
+          <div class="flex items-center gap-2.5 glass-card pl-2 pr-3 py-1 rounded-xl border-cyber-cyan/40">
+            ${avatarHTML}
+            <div class="hidden sm:flex flex-col text-left leading-tight">
+              <span class="text-xs font-bold text-white max-w-[130px] truncate">${escapeHTML(currentUser.displayName)}</span>
+              <span class="text-[10px] text-cyber-cyan font-semibold">Google Verified</span>
+            </div>
+            <button onclick="handleSignOut()" title="Sign Out" class="ml-1 px-2 py-1 rounded-lg bg-cyber-bg/80 text-slate-300 hover:text-cyber-pink text-xs font-bold transition-colors">
+              Sign Out
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    /**
+     * ============================================================================
+     * 2. WEB AUDIO API SYNTHESIZER SOUND EFFECTS ENGINE
+     * ============================================================================
+     */
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    window.toggleSound = function () {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('sound-icon');
+      const btn = document.getElementById('sound-toggle-btn');
+      if (soundEnabled) {
+        icon.className = 'fa-solid fa-volume-high';
+        btn.classList.remove('text-slate-500');
+        btn.classList.add('text-cyber-cyan');
+        playSound('click');
+      } else {
+        icon.className = 'fa-solid fa-volume-xmark';
+        btn.classList.remove('text-cyber-cyan');
+        btn.classList.add('text-slate-500');
+      }
+    };
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+
+      const now = ctx.currentTime;
+
+      if (type === 'click') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(580, now);
+        osc.frequency.exponentialRampToValueAtTime(860, now + 0.055);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.055);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.055);
+      } else if (type === 'tick') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(980, now);
+        gain.gain.setValueAtTime(0.045, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.045);
+      } else if (type === 'correct') {
+        const freqs = [523.25, 659.25, 783.99];
+        freqs.forEach((f, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, now + i * 0.065);
+          gain.gain.setValueAtTime(0.12, now + i * 0.065);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.065 + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + i * 0.065);
+          osc.stop(now + i * 0.065 + 0.25);
         });
-    </script>
+      } else if (type === 'streak') {
+        const freqs = [587.33, 739.99, 880, 1174.66];
+        freqs.forEach((f, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, now + i * 0.055);
+          gain.gain.setValueAtTime(0.11, now + i * 0.055);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.055 + 0.28);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + i * 0.055);
+          osc.stop(now + i * 0.055 + 0.28);
+        });
+      } else if (type === 'wrong') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(210, now);
+        osc.frequency.linearRampToValueAtTime(115, now + 0.3);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.32);
+      } else if (type === 'win') {
+        const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+        notes.forEach((f, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, now + i * 0.09);
+          gain.gain.setValueAtTime(0.13, now + i * 0.09);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.09 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + i * 0.09);
+          osc.stop(now + i * 0.09 + 0.35);
+        });
+      }
+    }
 
-    <script>
-        let quizzes = JSON.parse(localStorage.getItem('pulsequiz_data')) || [
-            { id: '1', title: 'Cyberpunk & Web Basics', creator: 'System', questions: [
-                { q: 'What is the standard root filename required by GitHub Pages?', options: ['index.html', 'main.html', 'home.html', 'root.html'], correct: 0 },
-                { q: 'Which protocol is used for secure web browsing?', options: ['HTTP', 'HTTPS', 'FTP', 'SSH'], correct: 1 }
-            ]}
-        ];
+    /**
+     * ============================================================================
+     * 3. STARTER QUIZZES & LOCALSTORAGE PERSISTENCE
+     * ============================================================================
+     */
+    const STORAGE_KEY_QUIZZES = 'pulsequiz_arcade_decks_v3';
+    const STORAGE_KEY_SCORES = 'pulsequiz_arcade_scores_v3';
 
-        let activeQuiz = null;
-        let currentQIndex = 0;
-        let score = 0;
-        let timer = null;
+    const STARTER_QUIZZES = [
+      {
+        id: 'starter-cyber-gaming',
+        title: 'Cyberpunk & Retro Gaming Legends',
+        category: 'Tech & Gaming',
+        difficulty: 'Easy',
+        isBuiltIn: true,
+        creator: 'PulseQuiz Arcade',
+        questions: [
+          {
+            question: 'Which iconic arcade maze game features ghosts named Blinky, Pinky, Inky, and Clyde?',
+            options: ['Galaga', 'Pac-Man', 'Space Invaders', 'Donkey Kong'],
+            correctIndex: 1
+          },
+          {
+            question: 'What does "FPS" stand for in competitive PC gaming?',
+            options: ['Frames Per Second', 'Fast Pixel Shader', 'File Protocol System', 'Full Power Screen'],
+            correctIndex: 0
+          },
+          {
+            question: 'In Cyberpunk 2077, what is the neon-lit metropolis where V’s story takes place?',
+            options: ['Neo-Tokyo', 'Midgar', 'Night City', 'New Mombasa'],
+            correctIndex: 2
+          },
+          {
+            question: 'Which programming language runs natively inside every modern web browser?',
+            options: ['Python', 'JavaScript', 'C++', 'Rust'],
+            correctIndex: 1
+          }
+        ]
+      },
+      {
+        id: 'starter-cosmic-space',
+        title: 'Deep Space & Cosmic Wonders',
+        category: 'Science & Space',
+        difficulty: 'Medium',
+        isBuiltIn: true,
+        creator: 'PulseQuiz Arcade',
+        questions: [
+          {
+            question: 'Which planet in our solar system has the largest and brightest ring system?',
+            options: ['Jupiter', 'Saturn', 'Uranus', 'Neptune'],
+            correctIndex: 1
+          },
+          {
+            question: 'What is the supermassive black hole at the center of our Milky Way galaxy called?',
+            options: ['Cygnus X-1', 'Sagittarius A*', 'Messier 87', 'Andromeda Core'],
+            correctIndex: 1
+          },
+          {
+            question: 'Approximately how fast does light travel through a vacuum?',
+            options: ['300,000 km/s', '30,000 km/s', '150,000 km/s', '3,000 km/s'],
+            correctIndex: 0
+          },
+          {
+            question: 'Which planet has the tallest known volcano in the solar system, Olympus Mons?',
+            options: ['Venus', 'Mercury', 'Mars', 'Io'],
+            correctIndex: 2
+          }
+        ]
+      },
+      {
+        id: 'starter-world-pop',
+        title: 'Global Landmarks & Pop Pulse',
+        category: 'World Trivia',
+        difficulty: 'Hard',
+        isBuiltIn: true,
+        creator: 'PulseQuiz Arcade',
+        questions: [
+          {
+            question: 'Which city is home to the Burj Khalifa, the world’s tallest skyscraper?',
+            options: ['Singapore', 'Tokyo', 'Dubai', 'Shanghai'],
+            correctIndex: 2
+          },
+          {
+            question: 'Which ocean covers more than 30% of Earth’s surface, making it the largest?',
+            options: ['Atlantic Ocean', 'Indian Ocean', 'Arctic Ocean', 'Pacific Ocean'],
+            correctIndex: 3
+          },
+          {
+            question: 'Which country hosted the very first modern Olympic Games in 1896?',
+            options: ['France', 'Greece', 'Italy', 'United Kingdom'],
+            correctIndex: 1
+          },
+          {
+            question: 'What is the name of the glowing sky phenomenon caused by solar wind hitting Earth’s magnetosphere?',
+            options: ['Aurora Borealis', 'Solar Corona', 'Green Flash', 'Zodiacal Light'],
+            correctIndex: 0
+          }
+        ]
+      }
+    ];
 
-        function switchView(view) {
-            document.getElementById('view-lobby').classList.add('hidden');
-            document.getElementById('view-studio').classList.add('hidden');
-            document.getElementById('view-game').classList.add('hidden');
-            document.getElementById('view-' + view).classList.remove('hidden');
-            if(view === 'lobby') renderLobby();
-            if(view === 'studio') initStudio();
+    function loadQuizzes() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_QUIZZES);
+        if (!raw) {
+          localStorage.setItem(STORAGE_KEY_QUIZZES, JSON.stringify(STARTER_QUIZZES));
+          return [...STARTER_QUIZZES];
         }
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : [...STARTER_QUIZZES];
+      } catch (e) {
+        return [...STARTER_QUIZZES];
+      }
+    }
 
-        function renderLobby() {
-            const list = document.getElementById('quiz-list');
-            list.innerHTML = quizzes.map(q => `
-                <div class="cyber-card p-6 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <h4 class="font-display font-bold text-lg text-white">${q.title}</h4>
-                        <p class="text-xs text-gray-400">By ${q.creator || 'Community'} • ${q.questions.length} Questions</p>
-                    </div>
-                    <button onclick="startQuiz('${q.id}')" class="cyber-button px-5 py-2 rounded-xl text-sm font-bold text-white">Play</button>
-                </div>
-            `).join('');
-        }
+    function saveQuizzesToStorage(list) {
+      try {
+        localStorage.setItem(STORAGE_KEY_QUIZZES, JSON.stringify(list));
+      } catch (e) {
+        showToast("Browser storage limit reached!", "error");
+      }
+    }
 
-        function initStudio() {
-            document.getElementById('studio-title').value = '';
-            document.getElementById('studio-questions').innerHTML = '';
-            addStudioQuestion();
-        }
+    window.deleteCustomQuiz = function (quizId, event) {
+      event.stopPropagation();
+      playSound('click');
+      const updated = loadQuizzes().filter(q => q.id !== quizId);
+      saveQuizzesToStorage(updated);
+      renderLobby();
+      showToast("Custom quiz deleted.", "info");
+    };
 
-        function addStudioQuestion() {
-            const container = document.getElementById('studio-questions');
-            const index = container.children.length + 1;
-            const div = document.createElement('div');
-            div.className = "p-4 rounded-xl bg-gray-900/50 border border-gray-800 space-y-3 question-block";
-            div.innerHTML = `
-                <div class="flex justify-between"><span class="text-xs font-bold text-pink-400">Question ${index}</span><button onclick="this.parentElement.parentElement.remove()" class="text-xs text-red-400">Delete</button></div>
-                <input type="text" placeholder="Question text" class="q-text w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm text-white">
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" placeholder="Option A" class="opt-0 w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm text-white">
-                    <input type="text" placeholder="Option B" class="opt-1 w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm text-white">
-                    <input type="text" placeholder="Option C" class="opt-2 w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm text-white">
-                    <input type="text" placeholder="Option D" class="opt-3 w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm text-white">
-                </div>
-                <div class="flex items-center space-x-2 text-xs text-gray-400">
-                    <span>Correct Option Index (0 for A, 1 for B, etc.):</span>
-                    <input type="number" min="0" max="3" value="0" class="correct-idx w-16 bg-gray-900 border border-gray-800 rounded px-2 py-1 text-white">
-                </div>
-            `;
-            container.appendChild(div);
-        }
+    /**
+     * ============================================================================
+     * 4. SPA NAVIGATION & LOBBY RENDERING
+     * ============================================================================
+     */
+    let activeCategory = 'All';
 
-        function saveStudioQuiz() {
-            const title = document.getElementById('studio-title').value.trim();
-            if(!title) { alert('Please enter a quiz title.'); return; }
-            const blocks = document.querySelectorAll('.question-block');
-            const questions = [];
-            blocks.forEach(b => {
-                const qText = b.querySelector('.q-text').value.trim();
-                const options = [0,1,2,3].map(i => b.querySelector(`.opt-${i}`).value.trim());
-                const correct = parseInt(b.querySelector('.correct-idx').value) || 0;
-                if(qText) questions.push({ q: qText, options, correct });
-            });
-            if(questions.length === 0) { alert('Add at least one valid question.'); return; }
-            
-            const creator = window.currentUser ? window.currentUser.displayName : 'Guest User';
-            quizzes.push({ id: Date.now().toString(), title, creator, questions });
-            localStorage.setItem('pulsequiz_data', JSON.stringify(quizzes));
-            switchView('lobby');
-        }
+    window.navigate = function (viewName) {
+      playSound('click');
+      clearInterval(gameState.timerInterval);
+      stopConfetti();
 
-        function startQuiz(id) {
-            activeQuiz = quizzes.find(q => q.id === id);
-            currentQIndex = 0;
-            score = 0;
-            switchView('game');
-            loadQuestion();
-        }
+      ['lobby', 'create', 'play', 'results'].forEach(v => {
+        const section = document.getElementById(`view-${v}`);
+        if (section) section.classList.add('hidden');
+      });
 
-        function loadQuestion() {
-            if(currentQIndex >= activeQuiz.questions.length) {
-                alert(`Quiz complete! Your score: ${score}/${activeQuiz.questions.length}`);
-                switchView('lobby');
-                return;
-            }
-            const q = activeQuiz.questions[currentQIndex];
-            document.getElementById('game-progress').innerText = `Question ${currentQIndex + 1}/${activeQuiz.questions.length}`;
-            document.getElementById('game-question').innerText = q.q;
-            const optContainer = document.getElementById('game-options');
-            optContainer.innerHTML = q.options.map((opt, idx) => `
-                <button onclick="selectOption(${idx})" class="w-full text-left p-4 rounded-xl bg-gray-900/80 border border-gray-800 hover:border-pink-500 font-medium transition text-white">${opt || 'Option ' + (idx+1)}</button>
-            `).join('');
-        }
+      const target = document.getElementById(`view-${viewName}`);
+      if (target) {
+        target.classList.remove('hidden');
+        target.classList.remove('animate-view');
+        void target.offsetWidth;
+        target.classList.add('animate-view');
+      }
 
-        function selectOption(idx) {
-            const q = activeQuiz.questions[currentQIndex];
-            if(idx === q.correct) score++;
-            currentQIndex++;
-            loadQuestion();
-        }
-
+      if (viewName === 'lobby') {
         renderLobby();
-    </script>
+      } else if (viewName === 'create') {
+        initQuizBuilder();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.filterCategory = function (category) {
+      playSound('click');
+      activeCategory = category;
+      document.querySelectorAll('.cat-pill').forEach(pill => {
+        if (pill.dataset.cat === category) {
+          pill.className = 'cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-cyber-cyan text-cyber-bg transition-all shrink-0';
+        } else {
+          pill.className = 'cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0';
+        }
+      });
+      renderLobby();
+    };
+
+    function renderLobby() {
+      const all = loadQuizzes();
+      const filtered = activeCategory === 'All'
+        ? all
+        : all.filter(q => q.category === activeCategory);
+
+      document.getElementById('quiz-count').textContent = filtered.length;
+      const grid = document.getElementById('quiz-grid');
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full rounded-3xl glass-card border-dashed p-12 text-center space-y-4">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-cyber-pink/15 text-cyber-pink flex items-center justify-center text-2xl">
+              <i class="fa-solid fa-ghost"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl">No quizzes in "${escapeHTML(activeCategory)}" yet</h3>
+            <p class="text-slate-400 text-sm max-w-md mx-auto">Open the Quiz Studio and build the first deck in this category!</p>
+            <button onclick="navigate('create')" class="px-6 py-2.5 rounded-xl bg-cyber-pink text-white font-bold text-sm hover:opacity-90 transition-all">
+              Open Quiz Studio
+            </button>
+          </div>
+        `;
+      } else {
+        grid.innerHTML = filtered.map(quiz => {
+          const catStyle = quiz.category === 'Tech & Gaming' ? 'text-cyber-cyan bg-cyber-cyan/10 border-cyber-cyan/30'
+            : quiz.category === 'Science & Space' ? 'text-cyber-lime bg-cyber-lime/10 border-cyber-lime/30'
+            : quiz.category === 'World Trivia' ? 'text-cyber-purple bg-cyber-purple/10 border-cyber-purple/30'
+            : quiz.category === 'Pop Culture' ? 'text-cyber-amber bg-cyber-amber/10 border-cyber-amber/30'
+            : 'text-cyber-pink bg-cyber-pink/10 border-cyber-pink/30';
+
+          const diff = quiz.difficulty || 'Medium';
+          const diffColor = diff === 'Easy' ? 'text-cyber-lime' : diff === 'Hard' ? 'text-cyber-pink' : 'text-cyber-amber';
+
+          const deleteBtn = !quiz.isBuiltIn ? `
+            <button onclick="deleteCustomQuiz('${quiz.id}', event)" title="Delete Your Custom Quiz"
+              class="p-2 rounded-lg text-slate-400 hover:text-cyber-pink hover:bg-cyber-pink/10 transition-colors">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          ` : '';
+
+          return `
+            <div onclick="startQuiz('${quiz.id}')"
+              class="group cursor-pointer rounded-3xl glass-card hover:border-cyber-cyan p-6 flex flex-col justify-between gap-6 transition-all duration-200 hover:-translate-y-1.5 shadow-xl hover:shadow-cyber-cyan/20">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="px-3 py-1 rounded-full text-xs font-bold border ${catStyle}">
+                    ${escapeHTML(quiz.category)}
+                  </span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-extrabold uppercase tracking-wider ${diffColor}">
+                      ${escapeHTML(diff)}
+                    </span>
+                    ${deleteBtn}
+                  </div>
+                </div>
+                <h3 class="font-display font-bold text-xl text-white group-hover:text-cyber-cyan transition-colors line-clamp-2">
+                  ${escapeHTML(quiz.title)}
+                </h3>
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                  <i class="fa-solid fa-user-astronaut text-cyber-purple"></i>
+                  <span>By <strong class="text-slate-200">${escapeHTML(quiz.creator || 'PulseQuiz Arcade')}</strong></span>
+                </div>
+              </div>
+
+              <div class="pt-4 border-t border-cyber-border flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-400">
+                  <i class="fa-solid fa-layer-group text-cyber-pink mr-1.5"></i>
+                  ${quiz.questions.length} Question${quiz.questions.length === 1 ? '' : 's'}
+                </span>
+                <span class="inline-flex items-center gap-1.5 text-sm font-display font-extrabold text-cyber-cyan group-hover:translate-x-1 transition-transform">
+                  Play Arena <i class="fa-solid fa-play text-xs"></i>
+                </span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      renderLobbyLeaderboard();
+    }
+
+    function renderLobbyLeaderboard() {
+      const container = document.getElementById('lobby-leaderboard');
+      const scores = loadHighScores();
+      if (scores.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-4 text-xs text-slate-400">
+            No arcade runs recorded yet. Play any quiz above to claim the #1 neon crown!
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = scores.map((s, idx) => `
+        <div class="p-3.5 rounded-2xl bg-cyber-bg/90 border ${idx === 0 ? 'border-cyber-amber/60' : 'border-cyber-border'} flex flex-col justify-between gap-2">
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded-md font-display font-extrabold text-xs ${idx === 0 ? 'bg-cyber-amber text-cyber-bg' : 'bg-cyber-card text-slate-300'}">
+              #${idx + 1}
+            </span>
+            <span class="font-display font-extrabold text-sm text-cyber-cyan">${s.score.toLocaleString()}</span>
+          </div>
+          <div class="flex items-center gap-2 min-w-0">
+            ${s.avatar ? `<img src="${escapeAttr(s.avatar)}" referrerpolicy="no-referrer" class="w-5 h-5 rounded-full border border-cyber-cyan shrink-0" alt="">` : ''}
+            <span class="text-xs font-bold text-white truncate">${escapeHTML(s.name)}</span>
+          </div>
+          <div class="text-[11px] text-slate-400 truncate">${escapeHTML(s.quizTitle)}</div>
+        </div>
+      `).join('');
+    }
+
+    /**
+     * ============================================================================
+     * 5. FULL QUIZ STUDIO BUILDER (A/B/C/D Selector, Reordering, Validation)
+     * ============================================================================
+     */
+    let builderQuestions = [];
+
+    function initQuizBuilder() {
+      document.getElementById('quiz-title-input').value = '';
+      document.getElementById('quiz-category-input').value = 'Custom';
+      document.getElementById('quiz-difficulty-input').value = 'Medium';
+      builderQuestions = [createEmptyQuestion()];
+      renderBuilderQuestions();
+    }
+
+    function createEmptyQuestion() {
+      return {
+        question: '',
+        options: ['', '', '', ''],
+        correctIndex: 0
+      };
+    }
+
+    function syncBuilderState() {
+      builderQuestions.forEach((q, idx) => {
+        const promptEl = document.getElementById(`builder-q-text-${idx}`);
+        if (promptEl) q.question = promptEl.value;
+        for (let o = 0; o < 4; o++) {
+          const optEl = document.getElementById(`builder-q-${idx}-opt-${o}`);
+          if (optEl) q.options[o] = optEl.value;
+        }
+      });
+    }
+
+    window.addBuilderQuestion = function () {
+      playSound('click');
+      syncBuilderState();
+      builderQuestions.push(createEmptyQuestion());
+      renderBuilderQuestions();
+      showToast(`Question #${builderQuestions.length} added!`, "info");
+    };
+
+    window.removeBuilderQuestion = function (idx) {
+      playSound('click');
+      if (builderQuestions.length <= 1) {
+        showToast("Your quiz must have at least 1 question.", "error");
+        return;
+      }
+      syncBuilderState();
+      builderQuestions.splice(idx, 1);
+      renderBuilderQuestions();
+    };
+
+    window.moveBuilderQuestion = function (idx, direction) {
+      playSound('click');
+      syncBuilderState();
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= builderQuestions.length) return;
+      const temp = builderQuestions[idx];
+      builderQuestions[idx] = builderQuestions[targetIdx];
+      builderQuestions[targetIdx] = temp;
+      renderBuilderQuestions();
+    };
+
+    window.setBuilderCorrect = function (qIdx, optIdx) {
+      playSound('click');
+      syncBuilderState();
+      builderQuestions[qIdx].correctIndex = optIdx;
+      renderBuilderQuestions();
+    };
+
+    function renderBuilderQuestions() {
+      const container = document.getElementById('builder-questions-list');
+      const letters = ['A', 'B', 'C', 'D'];
+
+      container.innerHTML = builderQuestions.map((q, qIdx) => {
+        const optionsMarkup = [0, 1, 2, 3].map(optIdx => {
+          const isCorrect = q.correctIndex === optIdx;
+          return `
+            <div class="flex items-center gap-2.5 p-2.5 rounded-2xl border transition-all ${isCorrect ? 'bg-cyber-lime/10 border-cyber-lime' : 'bg-cyber-bg/90 border-cyber-border'}">
+              <button type="button" onclick="setBuilderCorrect(${qIdx}, ${optIdx})"
+                title="Click to mark Option ${letters[optIdx]} as the correct answer"
+                class="w-9 h-9 rounded-xl font-display font-extrabold text-sm flex items-center justify-center shrink-0 transition-all ${isCorrect ? 'bg-cyber-lime text-cyber-bg shadow-md' : 'bg-cyber-card text-slate-300 hover:text-white border border-cyber-border'}">
+                ${isCorrect ? '<i class="fa-solid fa-check"></i>' : letters[optIdx]}
+              </button>
+              <input id="builder-q-${qIdx}-opt-${optIdx}" type="text"
+                value="${escapeAttr(q.options[optIdx])}"
+                placeholder="Option ${letters[optIdx]}..."
+                class="w-full bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none" />
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="rounded-3xl glass-card p-6 space-y-5 shadow-xl">
+            <div class="flex items-center justify-between gap-2">
+              <span class="px-3 py-1 rounded-lg bg-cyber-purple/20 text-cyber-purple font-display font-extrabold text-xs uppercase tracking-wider">
+                Question ${qIdx + 1} of ${builderQuestions.length}
+              </span>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="moveBuilderQuestion(${qIdx}, -1)" ${qIdx === 0 ? 'disabled' : ''}
+                  title="Move Up"
+                  class="p-2 rounded-lg bg-cyber-bg border border-cyber-border text-slate-300 hover:text-cyber-cyan disabled:opacity-30 transition-colors">
+                  <i class="fa-solid fa-arrow-up text-xs"></i>
+                </button>
+                <button type="button" onclick="moveBuilderQuestion(${qIdx}, 1)" ${qIdx === builderQuestions.length - 1 ? 'disabled' : ''}
+                  title="Move Down"
+                  class="p-2 rounded-lg bg-cyber-bg border border-cyber-border text-slate-300 hover:text-cyber-cyan disabled:opacity-30 transition-colors">
+                  <i class="fa-solid fa-arrow-down text-xs"></i>
+                </button>
+                <button type="button" onclick="removeBuilderQuestion(${qIdx})"
+                  title="Delete Question"
+                  class="px-2.5 py-2 rounded-lg bg-cyber-bg border border-cyber-border text-slate-400 hover:text-cyber-pink text-xs font-bold transition-colors ml-1">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <label for="builder-q-text-${qIdx}" class="block text-xs font-bold text-slate-300">Question Prompt *</label>
+              <input id="builder-q-text-${qIdx}" type="text"
+                value="${escapeAttr(q.question)}"
+                placeholder="Enter your trivia question..."
+                class="w-full px-4 py-3 rounded-xl bg-cyber-bg/90 border border-cyber-border text-white placeholder-slate-500 focus:outline-none focus:border-cyber-cyan transition-colors" />
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-400 font-semibold">Click A, B, C, or D to highlight the correct answer</span>
+                <span class="font-bold text-cyber-lime">Answer: Option ${letters[q.correctIndex]}</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                ${optionsMarkup}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.saveCreatedQuiz = function () {
+      syncBuilderState();
+
+      const title = document.getElementById('quiz-title-input').value.trim();
+      const category = document.getElementById('quiz-category-input').value;
+      const difficulty = document.getElementById('quiz-difficulty-input').value;
+
+      if (!title) {
+        playSound('wrong');
+        showToast("Please give your quiz a title before publishing.", "error");
+        document.getElementById('quiz-title-input').focus();
+        return;
+      }
+
+      for (let i = 0; i < builderQuestions.length; i++) {
+        const q = builderQuestions[i];
+        if (!q.question.trim()) {
+          playSound('wrong');
+          showToast(`Question #${i + 1} needs a question prompt.`, "error");
+          return;
+        }
+        for (let o = 0; o < 4; o++) {
+          if (!q.options[o].trim()) {
+            playSound('wrong');
+            showToast(`Please fill out all 4 options in Question #${i + 1}.`, "error");
+            return;
+          }
+        }
+      }
+
+      const creatorName = currentUser ? currentUser.displayName : 'Guest Creator';
+
+      const newDeck = {
+        id: 'custom_' + Date.now(),
+        title,
+        category,
+        difficulty,
+        isBuiltIn: false,
+        creator: creatorName,
+        questions: builderQuestions.map(q => ({
+          question: q.question.trim(),
+          options: q.options.map(opt => opt.trim()),
+          correctIndex: q.correctIndex
+        }))
+      };
+
+      const decks = loadQuizzes();
+      decks.unshift(newDeck);
+      saveQuizzesToStorage(decks);
+
+      playSound('win');
+      showToast(`"${title}" published by ${creatorName}!`, "success");
+
+      activeCategory = 'All';
+      document.querySelectorAll('.cat-pill').forEach(pill => {
+        pill.className = pill.dataset.cat === 'All'
+          ? 'cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-cyber-cyan text-cyber-bg transition-all shrink-0'
+          : 'cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0';
+      });
+
+      navigate('lobby');
+    };
+
+    /**
+     * ============================================================================
+     * 6. ARCADE GAMEPLAY ENGINE (15s Timer, Speed Bonus, 2x/3x/4x Streak Combos)
+     * ============================================================================
+     */
+    const QUESTION_SECONDS = 15;
+
+    let gameState = {
+      quiz: null,
+      currentIndex: 0,
+      score: 0,
+      totalSpeedBonus: 0,
+      streak: 0,
+      bestMultiplier: 1,
+      correctCount: 0,
+      timeLeft: QUESTION_SECONDS,
+      lastTick: QUESTION_SECONDS,
+      timerInterval: null,
+      answered: false
+    };
+
+    function getComboMultiplier(streak) {
+      if (streak >= 4) return 4;
+      if (streak === 3) return 3;
+      if (streak === 2) return 2;
+      return 1;
+    }
+
+    window.startQuiz = function (quizId) {
+      const quiz = loadQuizzes().find(q => q.id === quizId);
+      if (!quiz) {
+        showToast("Quiz could not be loaded.", "error");
+        return;
+      }
+
+      gameState = {
+        quiz,
+        currentIndex: 0,
+        score: 0,
+        totalSpeedBonus: 0,
+        streak: 0,
+        bestMultiplier: 1,
+        correctCount: 0,
+        timeLeft: QUESTION_SECONDS,
+        lastTick: QUESTION_SECONDS,
+        timerInterval: null,
+        answered: false
+      };
+
+      navigate('play');
+      document.getElementById('play-quiz-title').textContent = quiz.title;
+      document.getElementById('play-q-total').textContent = quiz.questions.length;
+      renderPlayQuestion();
+    };
+
+    window.exitQuiz = function () {
+      clearInterval(gameState.timerInterval);
+      navigate('lobby');
+    };
+
+    function renderPlayQuestion() {
+      clearInterval(gameState.timerInterval);
+      gameState.answered = false;
+      gameState.timeLeft = QUESTION_SECONDS;
+      gameState.lastTick = QUESTION_SECONDS;
+
+      const qObj = gameState.quiz.questions[gameState.currentIndex];
+      const mult = getComboMultiplier(gameState.streak);
+
+      document.getElementById('play-q-current').textContent = gameState.currentIndex + 1;
+      document.getElementById('play-score').textContent = gameState.score.toLocaleString();
+      document.getElementById('play-streak').textContent = gameState.streak;
+      document.getElementById('play-multiplier').textContent = `${mult}x`;
+      document.getElementById('play-question-text').textContent = qObj.question;
+      document.getElementById('play-feedback-area').classList.add('hidden');
+
+      const letters = ['A', 'B', 'C', 'D'];
+      const grid = document.getElementById('play-options-grid');
+      grid.innerHTML = qObj.options.map((opt, idx) => `
+        <button onclick="selectPlayOption(${idx})"
+          class="play-opt-btn group text-left p-4 sm:p-5 rounded-2xl bg-cyber-bg/90 border-2 border-cyber-border hover:border-cyber-cyan transition-all flex items-center gap-3.5 focus:outline-none">
+          <span class="w-9 h-9 rounded-xl glass-card group-hover:border-cyber-cyan group-hover:text-cyber-cyan font-display font-extrabold text-sm flex items-center justify-center shrink-0 transition-colors">
+            ${letters[idx]}
+          </span>
+          <span class="font-semibold text-sm sm:text-base text-slate-100">${escapeHTML(opt)}</span>
+        </button>
+      `).join('');
+
+      updateTimerDisplay();
+      gameState.timerInterval = setInterval(() => {
+        gameState.timeLeft -= 0.1;
+        const secCeil = Math.ceil(gameState.timeLeft);
+        if (secCeil <= 4 && secCeil > 0 && secCeil < gameState.lastTick) {
+          gameState.lastTick = secCeil;
+          playSound('tick');
+        }
+        if (gameState.timeLeft <= 0) {
+          gameState.timeLeft = 0;
+          updateTimerDisplay();
+          clearInterval(gameState.timerInterval);
+          handleTimeout();
+        } else {
+          updateTimerDisplay();
+        }
+      }, 100);
+    }
+
+    function updateTimerDisplay() {
+      const pct = Math.max(0, (gameState.timeLeft / QUESTION_SECONDS) * 100);
+      const bar = document.getElementById('play-timer-bar');
+      const txt = document.getElementById('play-timer-text');
+
+      bar.style.width = `${pct}%`;
+      txt.textContent = `${Math.ceil(gameState.timeLeft)}s`;
+
+      if (gameState.timeLeft <= 4) {
+        txt.className = 'text-cyber-pink animate-pulse';
+      } else {
+        txt.className = 'text-cyber-cyan';
+      }
+    }
+
+    window.selectPlayOption = function (selectedIdx) {
+      if (gameState.answered) return;
+      gameState.answered = true;
+      clearInterval(gameState.timerInterval);
+
+      const qObj = gameState.quiz.questions[gameState.currentIndex];
+      const isCorrect = selectedIdx === qObj.correctIndex;
+
+      document.querySelectorAll('.play-opt-btn').forEach((btn, idx) => {
+        btn.disabled = true;
+        btn.classList.remove('hover:border-cyber-cyan');
+
+        if (idx === qObj.correctIndex) {
+          btn.className = 'play-opt-btn text-left p-4 sm:p-5 rounded-2xl bg-cyber-lime/15 border-2 border-cyber-lime flex items-center gap-3.5 shadow-lg animate-pop';
+        } else if (idx === selectedIdx && !isCorrect) {
+          btn.className = 'play-opt-btn text-left p-4 sm:p-5 rounded-2xl bg-cyber-pink/15 border-2 border-cyber-pink flex items-center gap-3.5 animate-shake';
+        } else {
+          btn.className = 'play-opt-btn text-left p-4 sm:p-5 rounded-2xl bg-cyber-bg/40 border-2 border-cyber-border/40 opacity-45 flex items-center gap-3.5';
+        }
+      });
+
+      const feedbackMsg = document.getElementById('play-feedback-msg');
+
+      if (isCorrect) {
+        gameState.streak += 1;
+        gameState.correctCount += 1;
+        const mult = getComboMultiplier(gameState.streak);
+        if (mult > gameState.bestMultiplier) gameState.bestMultiplier = mult;
+
+        if (mult >= 2) {
+          playSound('streak');
+        } else {
+          playSound('correct');
+        }
+
+        const speedBonus = Math.round(gameState.timeLeft * 25);
+        const earned = (500 + speedBonus) * mult;
+        gameState.score += earned;
+        gameState.totalSpeedBonus += speedBonus * mult;
+
+        const badge = document.getElementById('streak-badge');
+        badge.classList.remove('animate-pop');
+        void badge.offsetWidth;
+        badge.classList.add('animate-pop');
+
+        feedbackMsg.innerHTML = `<span class="text-cyber-lime"><i class="fa-solid fa-circle-check mr-1.5"></i> +${earned.toLocaleString()} PTS (${mult}x Combo • +${speedBonus} Speed!)</span>`;
+      } else {
+        playSound('wrong');
+        gameState.streak = 0;
+        feedbackMsg.innerHTML = `<span class="text-cyber-pink"><i class="fa-solid fa-circle-xmark mr-1.5"></i> Wrong! Answer: ${escapeHTML(qObj.options[qObj.correctIndex])}</span>`;
+      }
+
+      document.getElementById('play-score').textContent = gameState.score.toLocaleString();
+      document.getElementById('play-streak').textContent = gameState.streak;
+      document.getElementById('play-multiplier').textContent = `${getComboMultiplier(gameState.streak)}x`;
+
+      const nextBtn = document.getElementById('play-next-btn');
+      nextBtn.innerHTML = gameState.currentIndex + 1 >= gameState.quiz.questions.length
+        ? `See Final Results <i class="fa-solid fa-trophy ml-1.5"></i>`
+        : `Next Question <i class="fa-solid fa-arrow-right ml-1.5"></i>`;
+
+      document.getElementById('play-feedback-area').classList.remove('hidden');
+    };
+
+    function handleTimeout() {
+      if (gameState.answered) return;
+      gameState.answered = true;
+      playSound('wrong');
+      gameState.streak = 0;
+
+      const qObj = gameState.quiz.questions[gameState.currentIndex];
+      document.querySelectorAll('.play-opt-btn').forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === qObj.correctIndex) {
+          btn.className = 'play-opt-btn text-left p-4 sm:p-5 rounded-2xl bg-cyber-lime/15 border-2 border-cyber-lime flex items-center gap-3.5';
+        } else {
+          btn.className = 'play-opt-btn text-left p-4 sm:p-5 rounded-2xl bg-cyber-bg/40 border-2 border-cyber-border/40 opacity-45 flex items-center gap-3.5';
+        }
+      });
+
+      document.getElementById('play-streak').textContent = 0;
+      document.getElementById('play-multiplier').textContent = '1x';
+      document.getElementById('play-feedback-msg').innerHTML = `<span class="text-cyber-amber"><i class="fa-solid fa-hourglass-end mr-1.5"></i> Time's Up! Answer: ${escapeHTML(qObj.options[qObj.correctIndex])}</span>`;
+      document.getElementById('play-feedback-area').classList.remove('hidden');
+    }
+
+    window.nextQuestion = function () {
+      playSound('click');
+      if (gameState.currentIndex + 1 < gameState.quiz.questions.length) {
+        gameState.currentIndex += 1;
+        renderPlayQuestion();
+      } else {
+        finishQuiz();
+      }
+    };
+
+    /**
+     * ============================================================================
+     * 7. RESULTS SUMMARY, CONFETTI CELEBRATION & TOP-5 LEADERBOARD
+     * ============================================================================
+     */
+    function finishQuiz() {
+      playSound('win');
+      const total = gameState.quiz.questions.length;
+      const accuracy = Math.round((gameState.correctCount / total) * 100);
+
+      const playerName = currentUser ? currentUser.displayName : 'Guest Runner';
+      const playerAvatar = currentUser ? currentUser.photoURL : null;
+
+      const highScores = loadHighScores();
+      highScores.push({
+        name: playerName,
+        avatar: playerAvatar,
+        quizTitle: gameState.quiz.title,
+        score: gameState.score,
+        accuracy
+      });
+      highScores.sort((a, b) => b.score - a.score);
+      const top5 = highScores.slice(0, 5);
+      localStorage.setItem(STORAGE_KEY_SCORES, JSON.stringify(top5));
+
+      navigate('results');
+
+      if (accuracy >= 50) {
+        launchConfetti();
+      }
+
+      document.getElementById('result-score').textContent = gameState.score.toLocaleString();
+      document.getElementById('result-accuracy').textContent = `${accuracy}%`;
+      document.getElementById('result-streak').textContent = `${gameState.bestMultiplier}x`;
+      document.getElementById('result-speed-bonus').textContent = `+${gameState.totalSpeedBonus.toLocaleString()}`;
+
+      if (accuracy === 100) {
+        document.getElementById('result-title').textContent = 'Flawless Overdrive!';
+        document.getElementById('result-subtitle').textContent = `100% perfection on "${gameState.quiz.title}".`;
+      } else if (accuracy >= 70) {
+        document.getElementById('result-title').textContent = 'Neon Champion!';
+        document.getElementById('result-subtitle').textContent = `Blazing run through "${gameState.quiz.title}"!`;
+      } else {
+        document.getElementById('result-title').textContent = 'Arena Run Complete';
+        document.getElementById('result-subtitle').textContent = `Replay "${gameState.quiz.title}" to push your combo multiplier higher!`;
+      }
+
+      document.getElementById('replay-btn').onclick = () => startQuiz(gameState.quiz.id);
+
+      const lbList = document.getElementById('leaderboard-list');
+      lbList.innerHTML = top5.map((entry, idx) => `
+        <div class="flex items-center justify-between px-3.5 py-2.5 rounded-xl glass-card">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="w-6 h-6 rounded-lg font-display font-extrabold text-xs flex items-center justify-center shrink-0 ${idx === 0 ? 'bg-cyber-amber text-cyber-bg' : 'bg-cyber-bg text-slate-400'}">
+              #${idx + 1}
+            </span>
+            ${entry.avatar ? `<img src="${escapeAttr(entry.avatar)}" referrerpolicy="no-referrer" class="w-6 h-6 rounded-full border border-cyber-cyan shrink-0" alt="">` : ''}
+            <div class="truncate">
+              <div class="font-bold text-white truncate">${escapeHTML(entry.name)}</div>
+              <div class="text-[11px] text-slate-400 truncate">${escapeHTML(entry.quizTitle)} • ${entry.accuracy}%</div>
+            </div>
+          </div>
+          <div class="font-display font-extrabold text-cyber-cyan shrink-0 ml-2">
+            ${entry.score.toLocaleString()} PTS
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadHighScores() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_SCORES);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    /**
+     * ============================================================================
+     * 8. CONFETTI PARTICLE CELEBRATION & TOAST NOTIFICATIONS
+     * ============================================================================
+     */
+    let confettiAnimId = null;
+
+    function launchConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const colors = ['#ff2a85', '#00f0ff', '#9d4edd', '#39ff14', '#ffb703'];
+      const particles = Array.from({ length: 110 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        w: Math.random() * 10 + 5,
+        h: Math.random() * 6 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vy: Math.random() * 3.5 + 2,
+        vx: (Math.random() - 0.5) * 2.5,
+        rot: Math.random() * 360,
+        vRot: (Math.random() - 0.5) * 8
+      }));
+
+      let frames = 0;
+      function draw() {
+        frames++;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          p.y += p.vy;
+          p.x += p.vx;
+          p.rot += p.vRot;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rot * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.restore();
+        });
+        if (frames < 220) {
+          confettiAnimId = requestAnimationFrame(draw);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      cancelAnimationFrame(confettiAnimId);
+      draw();
+    }
+
+    function stopConfetti() {
+      cancelAnimationFrame(confettiAnimId);
+      const canvas = document.getElementById('confetti-canvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+
+      const borderStyle = type === 'error'
+        ? 'border-cyber-pink'
+        : type === 'success'
+        ? 'border-cyber-lime'
+        : 'border-cyber-cyan';
+
+      const iconHTML = type === 'error'
+        ? '<i class="fa-solid fa-circle-exclamation text-cyber-pink"></i>'
+        : type === 'success'
+        ? '<i class="fa-solid fa-circle-check text-cyber-lime"></i>'
+        : '<i class="fa-solid fa-bolt text-cyber-cyan"></i>';
+
+      toast.className = `pointer-events-auto p-4 rounded-2xl glass-card border-2 ${borderStyle} text-white shadow-2xl flex items-center gap-3 text-sm font-medium animate-view`;
+      toast.innerHTML = `${iconHTML} <span class="flex-1">${escapeHTML(message)}</span>`;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.25s ease';
+        setTimeout(() => toast.remove(), 250);
+      }, 4200);
+    }
+
+    function escapeHTML(str) {
+      if (typeof str !== 'string') return '';
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function escapeAttr(str) {
+      return escapeHTML(str);
+    }
+
+    // Initialize Lobby & Auth UI on load
+    renderAuthUI();
+    renderLobby();
+  </script>
 </body>
 </html>
