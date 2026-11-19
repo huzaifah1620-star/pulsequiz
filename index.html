@@ -1,1604 +1,1182 @@
 <!DOCTYPE html>
-<meta name="google-site-verification" content="qbu1lqR7NMsSGV3iA_Mgxu-FLWeXRmE0Q1YO_19xj2I" />
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PulseQuiz • Cyber-Pop Quiz Arcade</title>
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Google Fonts: Space Grotesk & Outfit -->
+  <title>PulseQuiz • Cyberpunk Holo-Deck Arcade</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Outfit', 'sans-serif'],
-            display: ['Space Grotesk', 'sans-serif'],
-          },
-          colors: {
-            cyber: {
-              bg: '#070711',
-              card: '#111126',
-              cardLight: '#181836',
-              border: '#272752',
-              pink: '#ff2a85',
-              cyan: '#00f0ff',
-              purple: '#9d4edd',
-              lime: '#39ff14',
-              amber: '#ffb703'
-            }
-          }
-        }
-      }
-    }
-  </script>
-
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    /* Cyber-Pop Animated Grid & Ambient Neon Orbs */
+    :root {
+      --bg-deep: #030208;
+      --holo-cyan: #00f0ff;
+      --holo-pink: #ff007f;
+      --holo-purple: #bd00ff;
+      --holo-lime: #00ff66;
+      --holo-gold: #ffcc00;
+      --hud-panel: rgba(8, 7, 20, 0.85);
+      --hud-border: rgba(0, 240, 255, 0.35);
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
     body {
-      background-color: #070711;
-      color: #f8fafc;
+      background-color: var(--bg-deep);
+      color: var(--text-main);
       min-height: 100vh;
       overflow-x: hidden;
       position: relative;
     }
 
-    .cyber-grid-bg {
+    /* Cyberpunk Scanlines & Holo Grid */
+    .scanlines {
       position: fixed;
       inset: 0;
-      z-index: -2;
+      background: linear-gradient(rgba(18, 16, 36, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+      background-size: 100% 4px;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .cyber-horizon {
+      position: fixed;
+      inset: 0;
       background-image:
-        linear-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 42, 133, 0.06) 1px, transparent 1px);
-      background-size: 42px 42px;
-      animation: gridDrift 24s linear infinite;
-    }
-
-    @keyframes gridDrift {
-      0% { background-position: 0 0, 0 0; }
-      100% { background-position: 42px 42px, 42px 42px; }
-    }
-
-    .orb-pink {
-      position: fixed;
-      top: -12%;
-      left: -8%;
-      width: 460px;
-      height: 460px;
-      border-radius: 9999px;
-      background: radial-gradient(circle, rgba(255, 42, 133, 0.22) 0%, transparent 70%);
-      filter: blur(40px);
-      z-index: -1;
+        linear-gradient(rgba(0, 240, 255, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 0, 127, 0.07) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: horizonScroll 20s linear infinite;
+      z-index: -2;
       pointer-events: none;
-      animation: orbFloat 10s ease-in-out infinite alternate;
     }
 
-    .orb-cyan {
+    @keyframes horizonScroll {
+      0% { background-position: 0 0; }
+      100% { background-position: 50px 50px; }
+    }
+
+    /* Starfield Canvas */
+    #starfield {
       position: fixed;
-      bottom: -14%;
-      right: -8%;
-      width: 500px;
-      height: 500px;
-      border-radius: 9999px;
-      background: radial-gradient(circle, rgba(0, 240, 255, 0.20) 0%, transparent 70%);
-      filter: blur(45px);
-      z-index: -1;
+      inset: 0;
+      z-index: -3;
       pointer-events: none;
-      animation: orbFloat 12s ease-in-out infinite alternate-reverse;
     }
 
-    @keyframes orbFloat {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(35px, -30px) scale(1.12); }
-    }
-
-    /* Glassmorphic Cards & Neon Glows */
-    .glass-card {
-      background: rgba(17, 17, 38, 0.78);
+    /* Header HUD */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 28px;
+      background: var(--hud-panel);
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(39, 39, 82, 0.9);
+      border-bottom: 2px solid var(--hud-border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 4px 25px rgba(0, 240, 255, 0.15);
     }
 
-    .neon-glow-pink {
-      box-shadow: 0 0 24px rgba(255, 42, 133, 0.35);
-    }
-    .neon-glow-cyan {
-      box-shadow: 0 0 24px rgba(0, 240, 255, 0.32);
-    }
-    .neon-text-gradient {
-      background: linear-gradient(90deg, #00f0ff 0%, #ff2a85 55%, #9d4edd 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    /* Smooth View & Card Animations */
-    @keyframes viewSlideIn {
-      0% { opacity: 0; transform: translateY(14px) scale(0.985); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .animate-view {
-      animation: viewSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      color: var(--holo-cyan);
+      text-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+      cursor: pointer;
     }
 
-    @keyframes shakeWrong {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-7px); }
-      40%, 80% { transform: translateX(7px); }
-    }
-    .animate-shake {
-      animation: shakeWrong 0.36s ease-in-out;
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    @keyframes pulsePop {
-      0% { transform: scale(0.95); }
-      50% { transform: scale(1.04); }
-      100% { transform: scale(1); }
-    }
-    .animate-pop {
-      animation: pulsePop 0.28s ease-out;
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
     }
 
-    /* Confetti Canvas */
+    .btn-nav {
+      background: rgba(0, 240, 255, 0.08);
+      color: var(--text-main);
+      padding: 9px 16px;
+      border: 1px solid var(--hud-border);
+    }
+
+    .btn-nav:hover, .btn-nav.active {
+      background: rgba(0, 240, 255, 0.22);
+      border-color: var(--holo-cyan);
+      color: var(--holo-cyan);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
+    }
+
+    .btn-google {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      color: #030208;
+      padding: 9px 16px;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-google:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 240, 255, 0.1);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--holo-cyan);
+      font-size: 0.9rem;
+    }
+
+    .user-chip img {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+    }
+
+    .view { display: none; animation: fadeIn 0.3s ease; }
+    .view.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Holographic Generator Box */
+    .generator-box {
+      background: linear-gradient(135deg, rgba(8, 7, 24, 0.95), rgba(22, 6, 32, 0.9));
+      border: 1px solid var(--holo-pink);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 0 30px rgba(255, 0, 127, 0.2), inset 0 0 15px rgba(255, 0, 127, 0.1);
+      position: relative;
+    }
+
+    .generator-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .generator-header h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.3rem;
+      color: var(--holo-pink);
+      text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+    }
+
+    .generator-controls {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 12px;
+    }
+
+    @media (max-width: 760px) {
+      .generator-controls { grid-template-columns: 1fr; }
+    }
+
+    select, input[type="text"] {
+      background: rgba(3, 2, 8, 0.9);
+      border: 1px solid var(--hud-border);
+      color: var(--text-main);
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+    }
+
+    select:focus, input[type="text"]:focus {
+      border-color: var(--holo-cyan);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--holo-cyan), #0066ff);
+      color: #030208;
+      padding: 12px 22px;
+      font-weight: 900;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.7);
+    }
+
+    .btn-pink {
+      background: linear-gradient(135deg, var(--holo-pink), var(--holo-purple));
+      color: #fff;
+      padding: 12px 20px;
+      box-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
+    }
+
+    /* Category Filter Pills */
+    .category-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      margin-bottom: 22px;
+      scrollbar-width: thin;
+    }
+
+    .cat-pill {
+      white-space: nowrap;
+      padding: 8px 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .cat-pill.active, .cat-pill:hover {
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--holo-cyan);
+      border-color: var(--holo-cyan);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    }
+
+    /* Quiz Cards Grid */
+    .quiz-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 18px;
+    }
+
+    .quiz-card {
+      background: var(--hud-panel);
+      border: 1px solid var(--hud-border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .quiz-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--holo-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+    }
+
+    .badge-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 0.75rem;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .badge-cat {
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--holo-cyan);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .badge-diff {
+      color: var(--holo-gold);
+    }
+
+    .quiz-card h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .quiz-card p {
+      font-size: 0.95srem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    /* Arcade Play Screen */
+    .arcade-panel {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--hud-panel);
+      border: 1px solid var(--holo-cyan);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.2);
+      position: relative;
+    }
+
+    /* Overdrive Mode Glow */
+    .arcade-panel.overdrive {
+      border-color: var(--holo-pink);
+      box-shadow: 0 0 50px rgba(255, 0, 127, 0.4);
+    }
+
+    .hud-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+    }
+
+    .timer-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .timer-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, var(--holo-lime), var(--holo-cyan), var(--holo-pink));
+      transition: width 0.1s linear;
+    }
+
+    .question-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 22px;
+      line-height: 1.4;
+      color: #fff;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .options-grid { grid-template-columns: 1fr; }
+    }
+
+    .option-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--hud-border);
+      color: var(--text-main);
+      padding: 16px;
+      text-align: left;
+      font-size: 1.05rem;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--holo-cyan);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+    }
+
+    .option-btn.correct {
+      background: rgba(0, 255, 102, 0.25);
+      border-color: var(--holo-lime);
+      color: #fff;
+      box-shadow: 0 0 20px rgba(0, 255, 102, 0.4);
+    }
+
+    .option-btn.wrong {
+      background: rgba(255, 0, 127, 0.25);
+      border-color: var(--holo-pink);
+      color: #fff;
+      box-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
+    }
+
+    .opt-letter {
+      background: rgba(255, 255, 255, 0.1);
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    /* Studio Builder */
+    .studio-card {
+      background: var(--hud-panel);
+      border: 1px solid var(--hud-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .q-builder-item {
+      background: rgba(3, 2, 8, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+
+    .ans-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .correct-picker {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      align-items: center;
+    }
+
+    .pick-btn {
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+      border-radius: 6px;
+    }
+
+    .pick-btn.selected {
+      background: var(--holo-lime);
+      color: #030208;
+      box-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+    }
+
+    .lb-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
     #confetti-canvas {
       position: fixed;
       inset: 0;
-      width: 100%;
-      height: 100%;
       pointer-events: none;
-      z-index: 60;
+      z-index: 200;
     }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #070711; }
-    ::-webkit-scrollbar-thumb { background: #272752; border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: #ff2a85; }
   </style>
 </head>
-<body class="antialiased selection:bg-cyber-pink selection:text-white flex flex-col">
-
-  <!-- Animated Ambient Background & Confetti Layer -->
-  <div class="cyber-grid-bg"></div>
-  <div class="orb-pink"></div>
-  <div class="orb-cyan"></div>
+<body>
+  <div class="scanlines"></div>
+  <div class="cyber-horizon"></div>
+  <canvas id="starfield"></canvas>
   <canvas id="confetti-canvas"></canvas>
 
-  <!-- Toast Notification Stack -->
-  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
-
-  <!-- ==================== STICKY HEADER ==================== -->
-  <header class="sticky top-0 z-40 backdrop-blur-xl bg-cyber-bg/80 border-b border-cyber-border">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-      <!-- Brand Logo -->
-      <button onclick="navigate('lobby')" class="flex items-center gap-2.5 group focus:outline-none">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyber-pink via-cyber-purple to-cyber-cyan flex items-center justify-center text-cyber-bg font-display font-extrabold text-lg shadow-lg group-hover:scale-105 transition-transform">
-          <i class="fa-solid fa-bolt"></i>
-        </div>
-        <span class="font-display font-extrabold text-xl sm:text-2xl tracking-tight">
-          Pulse<span class="neon-text-gradient">Quiz</span>
-        </span>
-      </button>
-
-      <!-- Right Controls: Sound, Create Quiz, Google Auth -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Mute / Unmute Toggle -->
-        <button id="sound-toggle-btn" onclick="toggleSound()" title="Toggle Synthesizer Sound Effects"
-          class="p-2.5 rounded-xl glass-card text-cyber-cyan hover:border-cyber-cyan transition-all">
-          <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+  <header>
+    <div class="logo" onclick="switchView('lobby')">⚡ PULSEQUiZ_</div>
+    <div class="nav-actions">
+      <button class="btn-nav active" id="nav-lobby" onclick="switchView('lobby')">🎮 Holo-Lobby</button>
+      <button class="btn-nav" id="nav-studio" onclick="switchView('studio')">🛠️ Studio</button>
+      <button class="btn-nav" id="mute-btn" onclick="toggleMute()">🔊 SFX On</button>
+      <div id="auth-area">
+        <button class="btn-google" onclick="signInGoogle()">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Google Login
         </button>
-
-        <!-- Studio Button -->
-        <button onclick="navigate('create')"
-          class="px-3.5 py-2 rounded-xl bg-cyber-pink/15 border border-cyber-pink/60 text-cyber-pink hover:bg-cyber-pink hover:text-white font-bold text-xs sm:text-sm transition-all flex items-center gap-2">
-          <i class="fa-solid fa-plus"></i>
-          <span class="hidden sm:inline">Quiz Studio</span>
-        </button>
-
-        <!-- Real Firebase Google Auth Area -->
-        <div id="auth-area" class="flex items-center">
-          <button onclick="handleGoogleSignIn()"
-            class="px-3.5 py-2 rounded-xl bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 shadow-md">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-4 h-4" onerror="this.style.display='none'">
-            <span>Sign in with Google</span>
-          </button>
-        </div>
       </div>
     </div>
   </header>
 
-  <!-- ==================== MAIN SPA CONTAINER ==================== -->
-  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
-
-    <!-- ==================== VIEW 1: ARCADE LOBBY ==================== -->
-    <section id="view-lobby" class="animate-view space-y-8">
-      <!-- Hero Banner -->
-      <div class="relative overflow-hidden rounded-3xl glass-card p-6 sm:p-10 shadow-2xl border-cyber-purple/40">
-        <div class="absolute -top-20 -right-20 w-72 h-72 bg-cyber-pink/15 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-20 -left-20 w-72 h-72 bg-cyber-cyan/15 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div class="space-y-3 max-w-2xl">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan text-xs font-bold uppercase tracking-wider">
-              <span class="w-2 h-2 rounded-full bg-cyber-cyan animate-ping"></span>
-              Cyber-Pop Quiz Arcade • Live Cloud Auth
-            </div>
-            <h1 class="font-display font-extrabold text-3xl sm:text-5xl leading-tight">
-              Think Fast. Build Multipliers. <br />
-              <span class="neon-text-gradient">Rule the Neon Arena.</span>
-            </h1>
-            <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
-              Race the 15-second pulse clock to stack up to <strong>4x combo multipliers</strong>, or launch the Quiz Studio to craft and publish your own custom decks under your Google profile.
-            </p>
-          </div>
-
-          <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0">
-            <button onclick="navigate('create')"
-              class="px-6 py-4 rounded-2xl bg-gradient-to-r from-cyber-pink via-cyber-purple to-cyber-cyan text-white font-display font-extrabold text-base hover:opacity-95 transition-all neon-glow-pink flex items-center justify-center gap-2.5">
-              <i class="fa-solid fa-wand-magic-sparkles"></i>
-              Create Custom Quiz
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Category Filter Pills & Deck Count -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-2 overflow-x-auto pb-1" id="category-filters">
-          <button onclick="filterCategory('All')" data-cat="All" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-cyber-cyan text-cyber-bg transition-all shrink-0">All Arenas</button>
-          <button onclick="filterCategory('Tech & Gaming')" data-cat="Tech & Gaming" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0">Tech & Gaming</button>
-          <button onclick="filterCategory('Science & Space')" data-cat="Science & Space" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0">Science & Space</button>
-          <button onclick="filterCategory('World Trivia')" data-cat="World Trivia" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0">World Trivia</button>
-          <button onclick="filterCategory('Pop Culture')" data-cat="Pop Culture" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0">Pop Culture</button>
-          <button onclick="filterCategory('Custom')" data-cat="Custom" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0">Community Decks</button>
-        </div>
-        <div class="text-xs text-slate-400 font-semibold shrink-0">
-          <span id="quiz-count" class="text-cyber-cyan font-bold">0</span> playable quizzes
-        </div>
-      </div>
-
-      <!-- Quiz Decks Grid -->
-      <div id="quiz-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Populated dynamically -->
-      </div>
-
-      <!-- Lobby Top-5 Hall of Fame Preview -->
-      <div class="rounded-3xl glass-card p-6 sm:p-8 space-y-4">
-        <div class="flex items-center justify-between">
-          <h2 class="font-display font-extrabold text-xl flex items-center gap-2.5">
-            <i class="fa-solid fa-crown text-cyber-amber"></i>
-            <span>Arcade Hall of Fame</span>
-          </h2>
-          <span class="text-xs font-semibold text-slate-400">Local Top 5 High Scores</span>
-        </div>
-        <div id="lobby-leaderboard" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          <!-- Populated dynamically -->
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== VIEW 2: FULL QUIZ STUDIO BUILDER ==================== -->
-    <section id="view-create" class="hidden animate-view max-w-4xl mx-auto space-y-6">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 class="font-display font-extrabold text-2xl sm:text-3xl">
-            Quiz Studio <span class="text-cyber-pink">Builder</span>
-          </h2>
-          <p class="text-slate-400 text-sm">Click A, B, C, or D to set the right answer, reorder questions, and publish.</p>
-        </div>
-        <button onclick="navigate('lobby')" class="px-4 py-2 rounded-xl glass-card text-slate-300 hover:text-white hover:border-cyber-cyan text-sm font-bold transition-all">
-          <i class="fa-solid fa-arrow-left mr-1.5"></i> Back to Lobby
-        </button>
-      </div>
-
-      <!-- Quiz Metadata Settings -->
-      <div class="rounded-3xl glass-card p-6 space-y-5 shadow-xl">
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
-          <div class="sm:col-span-6 space-y-1.5">
-            <label for="quiz-title-input" class="block text-xs font-bold uppercase tracking-wider text-cyber-cyan">Quiz Title *</label>
-            <input id="quiz-title-input" type="text" placeholder="e.g., Neon Cyberpunk Legends"
-              class="w-full px-4 py-3 rounded-xl bg-cyber-bg/90 border border-cyber-border text-white placeholder-slate-500 focus:outline-none focus:border-cyber-cyan transition-colors" />
-          </div>
-          <div class="sm:col-span-3 space-y-1.5">
-            <label for="quiz-category-input" class="block text-xs font-bold uppercase tracking-wider text-cyber-pink">Category</label>
-            <select id="quiz-category-input"
-              class="w-full px-4 py-3 rounded-xl bg-cyber-bg/90 border border-cyber-border text-white focus:outline-none focus:border-cyber-pink transition-colors">
-              <option value="Custom">Custom</option>
-              <option value="Tech & Gaming">Tech & Gaming</option>
-              <option value="Science & Space">Science & Space</option>
-              <option value="World Trivia">World Trivia</option>
-              <option value="Pop Culture">Pop Culture</option>
-            </select>
-          </div>
-          <div class="sm:col-span-3 space-y-1.5">
-            <label for="quiz-difficulty-input" class="block text-xs font-bold uppercase tracking-wider text-cyber-amber">Difficulty</label>
-            <select id="quiz-difficulty-input"
-              class="w-full px-4 py-3 rounded-xl bg-cyber-bg/90 border border-cyber-border text-white focus:outline-none focus:border-cyber-amber transition-colors">
-              <option value="Easy">Easy</option>
-              <option value="Medium" selected>Medium</option>
-              <option value="Hard">Hard</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- Question Cards Stack -->
-      <div id="builder-questions-list" class="space-y-6">
-        <!-- Rendered via JS -->
-      </div>
-
-      <!-- Studio Footer Controls -->
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 pb-12">
-        <button type="button" onclick="addBuilderQuestion()"
-          class="w-full sm:w-auto px-6 py-3.5 rounded-2xl glass-card border-2 border-dashed border-cyber-cyan/60 text-cyber-cyan hover:bg-cyber-cyan/10 font-bold text-sm transition-all flex items-center justify-center gap-2">
-          <i class="fa-solid fa-plus-circle"></i>
-          Add Question
-        </button>
-
-        <button type="button" onclick="saveCreatedQuiz()"
-          class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-cyber-pink to-cyber-purple text-white font-display font-extrabold text-base hover:opacity-95 transition-all neon-glow-pink flex items-center justify-center gap-2.5">
-          <i class="fa-solid fa-rocket"></i>
-          Save & Publish Quiz
-        </button>
-      </div>
-    </section>
-
-    <!-- ==================== VIEW 3: ARCADE GAMEPLAY MODE ==================== -->
-    <section id="view-play" class="hidden animate-view max-w-3xl mx-auto space-y-6">
-      <!-- Top HUD -->
-      <div class="rounded-2xl glass-card p-4 flex flex-wrap items-center justify-between gap-4 shadow-lg">
-        <div class="flex items-center gap-3">
-          <button onclick="exitQuiz()" class="p-2.5 rounded-xl bg-cyber-bg border border-cyber-border text-slate-400 hover:text-white hover:border-cyber-pink transition-colors" title="Exit to Lobby">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+  <main>
+    <!-- LOBBY VIEW -->
+    <section id="view-lobby" class="view active">
+      <div class="generator-box">
+        <div class="generator-header">
           <div>
-            <div id="play-quiz-title" class="font-display font-bold text-sm sm:text-base text-white line-clamp-1">Quiz Title</div>
-            <div class="text-xs text-slate-400">
-              Question <span id="play-q-current" class="text-cyber-cyan font-bold">1</span> of <span id="play-q-total">4</span>
-            </div>
+            <h2>⚡ Infinite Holo-Generator</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Generate unlimited randomized trivia across 12 categories via live quantum API.</p>
           </div>
+          <span style="font-size: 0.75rem; color: var(--holo-lime); font-family: 'Orbitron', sans-serif;">● ONLINE API READY</span>
         </div>
-
-        <!-- Multiplier & Score HUD -->
-        <div class="flex items-center gap-2.5">
-          <div id="streak-badge" class="px-3 py-1.5 rounded-xl bg-cyber-amber/15 border border-cyber-amber/50 text-cyber-amber text-xs font-extrabold flex items-center gap-1.5 transition-transform">
-            <i class="fa-solid fa-fire"></i>
-            <span id="play-multiplier">1x</span>
-            <span class="hidden sm:inline text-[11px] opacity-80">(<span id="play-streak">0</span> streak)</span>
-          </div>
-          <div class="px-4 py-1.5 rounded-xl bg-cyber-cyan/15 border border-cyber-cyan/50 text-cyber-cyan font-display font-extrabold text-sm">
-            <span id="play-score">0</span> PTS
-          </div>
+        <div class="generator-controls">
+          <select id="gen-category"></select>
+          <select id="gen-difficulty">
+            <option value="any">Any Difficulty</option>
+            <option value="easy">Easy (1x Pts)</option>
+            <option value="medium">Medium (1.5x Pts)</option>
+            <option value="hard">Hard (2x Pts)</option>
+          </select>
+          <select id="gen-count">
+            <option value="5">5 Questions</option>
+            <option value="10" selected>10 Questions</option>
+            <option value="15">15 Questions</option>
+          </select>
+          <button class="btn-primary" id="gen-btn" onclick="generateInfiniteQuiz()">🚀 Engage</button>
         </div>
       </div>
 
-      <!-- 15-Second Visual Countdown Timer Bar -->
-      <div class="space-y-1.5">
-        <div class="flex justify-between text-xs font-bold">
-          <span class="text-slate-400 uppercase tracking-wider">Pulse Timer</span>
-          <span id="play-timer-text" class="text-cyber-cyan">15s</span>
+      <!-- Category Filter Pills -->
+      <div class="category-bar" id="category-pills"></div>
+
+      <!-- Quiz Cards Grid -->
+      <div class="quiz-grid" id="quiz-grid"></div>
+
+      <!-- Leaderboard -->
+      <div class="studio-card" style="margin-top: 30px;">
+        <h3 style="margin-bottom: 14px; font-family: 'Orbitron', sans-serif; color: var(--holo-gold); font-size: 1.1rem;">🏆 Holo-Deck Top High Scores</h3>
+        <div id="leaderboard-list"></div>
+      </div>
+    </section>
+
+    <!-- PLAY VIEW -->
+    <section id="view-play" class="view">
+      <div class="arcade-panel" id="play-box">
+        <div class="hud-bar">
+          <span id="hud-progress" style="color: var(--holo-cyan);">QUESTION 1 / 10</span>
+          <span id="hud-streak" style="color: var(--holo-pink);">🔥 STREAK: 0 (1x)</span>
+          <span id="hud-score" style="color: var(--holo-gold);">SCORE: 0</span>
         </div>
-        <div class="w-full h-3.5 rounded-full bg-cyber-card border border-cyber-border overflow-hidden p-0.5">
-          <div id="play-timer-bar" class="h-full rounded-full bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-pink transition-all duration-100" style="width: 100%;"></div>
-        </div>
+        <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+        <div class="question-text" id="question-text">Initializing Holo-Stream...</div>
+        <div class="options-grid" id="options-grid"></div>
       </div>
 
-      <!-- Active Question Arena Card -->
-      <div class="rounded-3xl glass-card p-6 sm:p-10 shadow-2xl space-y-8 border-cyber-purple/40">
-        <h3 id="play-question-text" class="font-display font-bold text-xl sm:text-3xl text-center leading-snug">
-          Loading question...
-        </h3>
-
-        <!-- 4 Answer Choices -->
-        <div id="play-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- Populated dynamically -->
-        </div>
-
-        <!-- Instant Feedback & Next Button -->
-        <div id="play-feedback-area" class="hidden pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-cyber-border">
-          <div id="play-feedback-msg" class="font-display font-bold text-sm sm:text-base flex items-center gap-2"></div>
-          <button id="play-next-btn" onclick="nextQuestion()"
-            class="w-full sm:w-auto px-6 py-3 rounded-xl bg-cyber-cyan text-cyber-bg font-display font-extrabold text-sm hover:opacity-90 transition-all shadow-lg">
-            Next Question <i class="fa-solid fa-arrow-right ml-1.5"></i>
-          </button>
+      <!-- Results Panel -->
+      <div class="arcade-panel" id="result-box" style="display: none; text-align: center;">
+        <h2 style="font-family: 'Orbitron', sans-serif; font-size: 1.8rem; margin-bottom: 10px; color: var(--holo-cyan);">SESSION COMPLETE</h2>
+        <p id="result-summary" style="color: var(--text-muted); margin-bottom: 20px; font-size: 1.1rem;"></p>
+        <div style="font-family: 'Orbitron', sans-serif; font-size: 2.4rem; font-weight: 900; color: var(--holo-gold); margin-bottom: 24px;" id="final-score">0 PTS</div>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <button class="btn-primary" onclick="replayCurrentQuiz()">🔄 Replay</button>
+          <button class="btn-pink" onclick="generateInfiniteQuiz()">⚡ New Quiz</button>
+          <button class="btn-nav" onclick="switchView('lobby')">🏠 Lobby</button>
         </div>
       </div>
     </section>
 
-    <!-- ==================== VIEW 4: END-OF-QUIZ SUMMARY & LEADERBOARD ==================== -->
-    <section id="view-results" class="hidden animate-view max-w-2xl mx-auto space-y-6 text-center">
-      <div class="rounded-3xl glass-card p-8 sm:p-10 shadow-2xl space-y-6 relative overflow-hidden border-cyber-cyan/40">
-        <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-tr from-cyber-amber via-cyber-pink to-cyber-purple flex items-center justify-center text-4xl text-white shadow-xl">
-          <i class="fa-solid fa-trophy"></i>
+    <!-- STUDIO VIEW -->
+    <section id="view-studio" class="view">
+      <div class="studio-card">
+        <h2 style="font-family: 'Orbitron', sans-serif; margin-bottom: 6px; color: var(--holo-cyan);">🛠️ Custom Quiz Studio</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 18px;">Build your own custom quiz and deploy it directly into the Holo-Lobby.</p>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+          <input type="text" id="studio-title" placeholder="Quiz Title (e.g., Cyberpunk Lore)" />
+          <select id="studio-category"></select>
+          <select id="studio-diff">
+            <option value="Easy">Easy</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
         </div>
 
-        <div class="space-y-2">
-          <div class="text-xs font-bold uppercase tracking-widest text-cyber-cyan">Arena Run Complete</div>
-          <h2 id="result-title" class="font-display font-extrabold text-3xl sm:text-4xl">Cyber Champion!</h2>
-          <p id="result-subtitle" class="text-slate-300 text-sm">You dominated the neon grid.</p>
-        </div>
+        <div id="studio-questions"></div>
 
-        <!-- Score Breakdown Grid -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-          <div class="p-3.5 rounded-2xl bg-cyber-bg/90 border border-cyber-border">
-            <div class="text-[11px] text-slate-400 font-semibold uppercase">Total Score</div>
-            <div id="result-score" class="font-display font-extrabold text-xl text-cyber-cyan mt-1">0</div>
-          </div>
-          <div class="p-3.5 rounded-2xl bg-cyber-bg/90 border border-cyber-border">
-            <div class="text-[11px] text-slate-400 font-semibold uppercase">Accuracy</div>
-            <div id="result-accuracy" class="font-display font-extrabold text-xl text-cyber-lime mt-1">0%</div>
-          </div>
-          <div class="p-3.5 rounded-2xl bg-cyber-bg/90 border border-cyber-border">
-            <div class="text-[11px] text-slate-400 font-semibold uppercase">Peak Combo</div>
-            <div id="result-streak" class="font-display font-extrabold text-xl text-cyber-amber mt-1">1x</div>
-          </div>
-          <div class="p-3.5 rounded-2xl bg-cyber-bg/90 border border-cyber-border">
-            <div class="text-[11px] text-slate-400 font-semibold uppercase">Speed Bonus</div>
-            <div id="result-speed-bonus" class="font-display font-extrabold text-xl text-cyber-pink mt-1">+0</div>
-          </div>
-        </div>
-
-        <!-- Top 5 Local High-Score Leaderboard -->
-        <div class="text-left bg-cyber-bg/90 rounded-2xl border border-cyber-border p-5 space-y-3">
-          <div class="flex items-center justify-between">
-            <h4 class="font-display font-bold text-sm uppercase tracking-wider text-slate-200">
-              <i class="fa-solid fa-crown text-cyber-amber mr-1.5"></i> Top 5 High Scores
-            </h4>
-            <span class="text-xs text-slate-500">Saved Locally</span>
-          </div>
-          <div id="leaderboard-list" class="space-y-2 text-sm">
-            <!-- Populated dynamically -->
-          </div>
-        </div>
-
-        <!-- Replay & Lobby Actions -->
-        <div class="flex flex-col sm:flex-row gap-3 pt-2">
-          <button id="replay-btn" class="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-cyber-pink to-cyber-purple text-white font-display font-extrabold text-base hover:opacity-95 transition-all neon-glow-pink">
-            <i class="fa-solid fa-rotate-right mr-2"></i> Replay Arena
-          </button>
-          <button onclick="navigate('lobby')" class="flex-1 py-3.5 rounded-2xl bg-cyber-bg border border-cyber-border text-white font-display font-extrabold text-base hover:border-cyber-cyan transition-all">
-            <i class="fa-solid fa-grid-2 mr-2"></i> Back to Lobby
-          </button>
+        <div style="display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap;">
+          <button class="btn-nav" onclick="addStudioQuestion()">➕ Add Question</button>
+          <button class="btn-primary" onclick="saveStudioQuiz()">💾 Deploy to Lobby</button>
         </div>
       </div>
     </section>
-
   </main>
 
-  <!-- Footer -->
-  <footer class="border-t border-cyber-border/70 py-5 text-center text-xs text-slate-500">
-    PulseQuiz Cyber-Pop Arcade • Powered by Firebase Auth & Web Audio Synthesizer
-  </footer>
-
-  <!-- ==================== APPLICATION & FIREBASE MODULE SCRIPT ==================== -->
+  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getAuth,
-      GoogleAuthProvider,
-      signInWithPopup,
-      signOut,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    /**
-     * ============================================================================
-     * 1. REAL FIREBASE GOOGLE AUTHENTICATION (Project: pulsequiz-a5da1)
-     * ============================================================================
-     */
     const firebaseConfig = {
-      apiKey: "AIzaSyCeN3pbvANI4qqdaivt4CKlD4PNcqcEDl4",
+      apiKey: "AIzaSyDummyKeyReplaceIfNeeded",
       authDomain: "pulsequiz-a5da1.firebaseapp.com",
       projectId: "pulsequiz-a5da1",
-      storageBucket: "pulsequiz-a5da1.firebasestorage.app",
-      messagingSenderId: "668679540827",
-      appId: "1:668679540827:web:67202298f3821197fc6f7e",
-      measurementId: "G-K46F6R2GC5"
+      storageBucket: "pulsequiz-a5da1.appspot.com",
+      messagingSenderId: "102938475610",
+      appId: "1:102938475610:web:abcdef123456"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const googleProvider = new GoogleAuthProvider();
-    googleProvider.setCustomParameters({ prompt: 'select_account' });
+    let auth, provider;
+    try {
+      const app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      provider = new GoogleAuthProvider();
+    } catch (e) {
+      console.warn("Firebase notice:", e);
+    }
 
-    let currentUser = null;
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = {
-          uid: user.uid,
-          displayName: user.displayName || user.email.split('@')[0],
-          email: user.email,
-          photoURL: user.photoURL
-        };
-      } else {
-        currentUser = null;
-      }
-      renderAuthUI();
-    });
-
-    window.handleGoogleSignIn = async function () {
-      playSound('click');
-      try {
-        const result = await signInWithPopup(auth, googleProvider);
-        showToast(`Welcome, ${result.user.displayName || result.user.email}!`, 'success');
-      } catch (error) {
-        console.error("Google Auth Error:", error);
-        if (error.code === 'auth/unauthorized-domain') {
-          showToast("Domain unauthorized! Add 'huzaifah1620-star.github.io' in Firebase Authentication -> Settings -> Authorized domains.", "error");
-        } else if (error.code === 'auth/popup-closed-by-user') {
-          showToast("Sign-in popup closed before finishing.", "info");
-        } else {
-          showToast(`Auth error: ${error.message}`, "error");
-        }
-      }
+    window.currentUser = null;
+    window.signInGoogle = async () => {
+      if (!auth) return alert("Firebase Auth is initializing.");
+      try { await signInWithPopup(auth, provider); } catch (err) { alert("Notice: " + err.message); }
     };
+    window.signOutGoogle = async () => { if (auth) await signOut(auth); };
 
-    window.handleSignOut = async function () {
-      playSound('click');
-      try {
-        await signOut(auth);
-        showToast("Signed out of Google account.", "info");
-      } catch (err) {
-        showToast("Could not sign out: " + err.message, "error");
-      }
-    };
-
-    function renderAuthUI() {
-      const authArea = document.getElementById('auth-area');
-      if (!currentUser) {
-        authArea.innerHTML = `
-          <button onclick="handleGoogleSignIn()"
-            class="px-3.5 py-2 rounded-xl bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 shadow-md">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-4 h-4" onerror="this.style.display='none'">
-            <span>Sign in with Google</span>
-          </button>
-        `;
-      } else {
-        const avatarHTML = currentUser.photoURL
-          ? `<img src="${escapeAttr(currentUser.photoURL)}" alt="Avatar" referrerpolicy="no-referrer" class="w-7 h-7 rounded-full border border-cyber-cyan object-cover">`
-          : `<div class="w-7 h-7 rounded-full bg-gradient-to-tr from-cyber-cyan to-cyber-pink flex items-center justify-center text-xs font-extrabold text-cyber-bg">${escapeHTML(currentUser.displayName[0].toUpperCase())}</div>`;
-
-        authArea.innerHTML = `
-          <div class="flex items-center gap-2.5 glass-card pl-2 pr-3 py-1 rounded-xl border-cyber-cyan/40">
-            ${avatarHTML}
-            <div class="hidden sm:flex flex-col text-left leading-tight">
-              <span class="text-xs font-bold text-white max-w-[130px] truncate">${escapeHTML(currentUser.displayName)}</span>
-              <span class="text-[10px] text-cyber-cyan font-semibold">Google Verified</span>
+    if (auth) {
+      onAuthStateChanged(auth, (user) => {
+        window.currentUser = user;
+        const authArea = document.getElementById("auth-area");
+        if (user) {
+          authArea.innerHTML = `
+            <div class="user-chip">
+              <img src="${user.photoURL || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + user.uid}" alt="avatar" />
+              <span>${user.displayName || 'Agent'}</span>
+              <button class="btn-nav" style="padding:4px 10px; font-size:0.7rem;" onclick="signOutGoogle()">Exit</button>
             </div>
-            <button onclick="handleSignOut()" title="Sign Out" class="ml-1 px-2 py-1 rounded-lg bg-cyber-bg/80 text-slate-300 hover:text-cyber-pink text-xs font-bold transition-colors">
-              Sign Out
+          `;
+        } else {
+          authArea.innerHTML = `
+            <button class="btn-google" onclick="signInGoogle()">
+              <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+              Google Login
             </button>
-          </div>
-        `;
-      }
+          `;
+        }
+      });
     }
+  </script>
 
-    /**
-     * ============================================================================
-     * 2. WEB AUDIO API SYNTHESIZER SOUND EFFECTS ENGINE
-     * ============================================================================
-     */
-    let soundEnabled = true;
-    let audioCtx = null;
-
-    function getAudioCtx() {
-      if (!audioCtx) {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (AudioContext) audioCtx = new AudioContext();
-      }
-      if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      return audioCtx;
+  <script>
+    // Starfield Background Animation
+    const starCanvas = document.getElementById("starfield");
+    const starCtx = starCanvas.getContext("2d");
+    function resizeStars() {
+      starCanvas.width = window.innerWidth;
+      starCanvas.height = window.innerHeight;
     }
+    window.addEventListener("resize", resizeStars);
+    resizeStars();
 
-    window.toggleSound = function () {
-      soundEnabled = !soundEnabled;
-      const icon = document.getElementById('sound-icon');
-      const btn = document.getElementById('sound-toggle-btn');
-      if (soundEnabled) {
-        icon.className = 'fa-solid fa-volume-high';
-        btn.classList.remove('text-slate-500');
-        btn.classList.add('text-cyber-cyan');
-        playSound('click');
-      } else {
-        icon.className = 'fa-solid fa-volume-xmark';
-        btn.classList.remove('text-cyber-cyan');
-        btn.classList.add('text-slate-500');
-      }
-    };
+    const stars = Array.from({ length: 120 }, () => ({
+      x: Math.random() * starCanvas.width,
+      y: Math.random() * starCanvas.height,
+      size: Math.random() * 1.8 + 0.4,
+      speed: Math.random() * 0.3 + 0.1
+    }));
 
-    function playSound(type) {
-      if (!soundEnabled) return;
-      const ctx = getAudioCtx();
-      if (!ctx) return;
-
-      const now = ctx.currentTime;
-
-      if (type === 'click') {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(580, now);
-        osc.frequency.exponentialRampToValueAtTime(860, now + 0.055);
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.055);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.055);
-      } else if (type === 'tick') {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(980, now);
-        gain.gain.setValueAtTime(0.045, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.045);
-      } else if (type === 'correct') {
-        const freqs = [523.25, 659.25, 783.99];
-        freqs.forEach((f, i) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(f, now + i * 0.065);
-          gain.gain.setValueAtTime(0.12, now + i * 0.065);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.065 + 0.25);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now + i * 0.065);
-          osc.stop(now + i * 0.065 + 0.25);
-        });
-      } else if (type === 'streak') {
-        const freqs = [587.33, 739.99, 880, 1174.66];
-        freqs.forEach((f, i) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(f, now + i * 0.055);
-          gain.gain.setValueAtTime(0.11, now + i * 0.055);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.055 + 0.28);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now + i * 0.055);
-          osc.stop(now + i * 0.055 + 0.28);
-        });
-      } else if (type === 'wrong') {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(210, now);
-        osc.frequency.linearRampToValueAtTime(115, now + 0.3);
-        gain.gain.setValueAtTime(0.12, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.32);
-      } else if (type === 'win') {
-        const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
-        notes.forEach((f, i) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(f, now + i * 0.09);
-          gain.gain.setValueAtTime(0.13, now + i * 0.09);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.09 + 0.35);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now + i * 0.09);
-          osc.stop(now + i * 0.09 + 0.35);
-        });
-      }
+    function animateStars() {
+      starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+      starCtx.fillStyle = "rgba(0, 240, 255, 0.6)";
+      stars.forEach(s => {
+        s.y += s.speed;
+        if (s.y > starCanvas.height) s.y = 0;
+        starCtx.fillRect(s.x, s.y, s.size, s.size);
+      });
+      requestAnimationFrame(animateStars);
     }
+    animateStars();
 
-    /**
-     * ============================================================================
-     * 3. STARTER QUIZZES & LOCALSTORAGE PERSISTENCE
-     * ============================================================================
-     */
-    const STORAGE_KEY_QUIZZES = 'pulsequiz_arcade_decks_v3';
-    const STORAGE_KEY_SCORES = 'pulsequiz_arcade_scores_v3';
+    // Categories & Starters
+    const CATEGORIES = [
+      { id: "all", name: "🌐 All Categories", apiId: "" },
+      { id: "general", name: "🧠 General Knowledge", apiId: "9" },
+      { id: "tech", name: "💻 Tech & Coding", apiId: "18" },
+      { id: "science", name: "🔬 Science & Nature", apiId: "17" },
+      { id: "gaming", name: "🎮 Video Games", apiId: "15" },
+      { id: "movies", name: "🎬 Movies & Cinema", apiId: "11" },
+      { id: "music", name: "🎵 Music & Pop", apiId: "12" },
+      { id: "anime", name: "⛩️ Anime & Manga", apiId: "31" },
+      { id: "history", name: "🏛️ World History", apiId: "23" },
+      { id: "geography", name: "🌍 Geography", apiId: "22" },
+      { id: "sports", name: "⚽ Sports", apiId: "21" },
+      { id: "animals", name: "🦁 Animals", apiId: "27" },
+      { id: "math", name: "📐 Math & Logic", apiId: "19" }
+    ];
 
     const STARTER_QUIZZES = [
       {
-        id: 'starter-cyber-gaming',
-        title: 'Cyberpunk & Retro Gaming Legends',
-        category: 'Tech & Gaming',
-        difficulty: 'Easy',
-        isBuiltIn: true,
-        creator: 'PulseQuiz Arcade',
+        id: "starter-tech",
+        title: "Cyber & Code Speedrun",
+        category: "tech",
+        difficulty: "Medium",
+        author: "PulseNet AI",
         questions: [
-          {
-            question: 'Which iconic arcade maze game features ghosts named Blinky, Pinky, Inky, and Clyde?',
-            options: ['Galaga', 'Pac-Man', 'Space Invaders', 'Donkey Kong'],
-            correctIndex: 1
-          },
-          {
-            question: 'What does "FPS" stand for in competitive PC gaming?',
-            options: ['Frames Per Second', 'Fast Pixel Shader', 'File Protocol System', 'Full Power Screen'],
-            correctIndex: 0
-          },
-          {
-            question: 'In Cyberpunk 2077, what is the neon-lit metropolis where V’s story takes place?',
-            options: ['Neo-Tokyo', 'Midgar', 'Night City', 'New Mombasa'],
-            correctIndex: 2
-          },
-          {
-            question: 'Which programming language runs natively inside every modern web browser?',
-            options: ['Python', 'JavaScript', 'C++', 'Rust'],
-            correctIndex: 1
-          }
+          { q: "What does HTML stand for?", options: ["HyperText Markup Language", "HighTech Machine Learning", "Hyperlink Text Management", "Home Tool Markup Language"], correct: 0 },
+          { q: "Which data structure uses LIFO (Last In, First Out)?", options: ["Queue", "Stack", "Linked List", "Hash Map"], correct: 1 },
+          { q: "What port does HTTPS use by default?", options: ["80", "21", "443", "8080"], correct: 2 },
+          { q: "Which company created TypeScript?", options: ["Google", "Meta", "Microsoft", "Apple"], correct: 2 }
         ]
       },
       {
-        id: 'starter-cosmic-space',
-        title: 'Deep Space & Cosmic Wonders',
-        category: 'Science & Space',
-        difficulty: 'Medium',
-        isBuiltIn: true,
-        creator: 'PulseQuiz Arcade',
+        id: "starter-science",
+        title: "Cosmos & Quantum Blast",
+        category: "science",
+        difficulty: "Medium",
+        author: "PulseNet AI",
         questions: [
-          {
-            question: 'Which planet in our solar system has the largest and brightest ring system?',
-            options: ['Jupiter', 'Saturn', 'Uranus', 'Neptune'],
-            correctIndex: 1
-          },
-          {
-            question: 'What is the supermassive black hole at the center of our Milky Way galaxy called?',
-            options: ['Cygnus X-1', 'Sagittarius A*', 'Messier 87', 'Andromeda Core'],
-            correctIndex: 1
-          },
-          {
-            question: 'Approximately how fast does light travel through a vacuum?',
-            options: ['300,000 km/s', '30,000 km/s', '150,000 km/s', '3,000 km/s'],
-            correctIndex: 0
-          },
-          {
-            question: 'Which planet has the tallest known volcano in the solar system, Olympus Mons?',
-            options: ['Venus', 'Mercury', 'Mars', 'Io'],
-            correctIndex: 2
-          }
+          { q: "Which planet has the most moons in our solar system?", options: ["Jupiter", "Saturn", "Uranus", "Neptune"], correct: 1 },
+          { q: "What is the chemical symbol for Gold?", options: ["Gd", "Go", "Au", "Ag"], correct: 2 },
+          { q: "What is the speed of light in a vacuum (approx)?", options: ["300,000 km/s", "150,000 km/s", "30,000 km/s", "3,000,000 km/s"], correct: 0 }
         ]
       },
       {
-        id: 'starter-world-pop',
-        title: 'Global Landmarks & Pop Pulse',
-        category: 'World Trivia',
-        difficulty: 'Hard',
-        isBuiltIn: true,
-        creator: 'PulseQuiz Arcade',
+        id: "starter-gaming",
+        title: "Arcade Legends Arena",
+        category: "gaming",
+        difficulty: "Easy",
+        author: "PulseNet AI",
         questions: [
-          {
-            question: 'Which city is home to the Burj Khalifa, the world’s tallest skyscraper?',
-            options: ['Singapore', 'Tokyo', 'Dubai', 'Shanghai'],
-            correctIndex: 2
-          },
-          {
-            question: 'Which ocean covers more than 30% of Earth’s surface, making it the largest?',
-            options: ['Atlantic Ocean', 'Indian Ocean', 'Arctic Ocean', 'Pacific Ocean'],
-            correctIndex: 3
-          },
-          {
-            question: 'Which country hosted the very first modern Olympic Games in 1896?',
-            options: ['France', 'Greece', 'Italy', 'United Kingdom'],
-            correctIndex: 1
-          },
-          {
-            question: 'What is the name of the glowing sky phenomenon caused by solar wind hitting Earth’s magnetosphere?',
-            options: ['Aurora Borealis', 'Solar Corona', 'Green Flash', 'Zodiacal Light'],
-            correctIndex: 0
-          }
+          { q: "What is the best-selling video game of all time?", options: ["Tetris", "Minecraft", "GTA V", "Wii Sports"], correct: 1 },
+          { q: "Who is the protagonist in The Legend of Zelda?", options: ["Zelda", "Ganon", "Link", "Epona"], correct: 2 },
+          { q: "In Pac-Man, what color is Blinky?", options: ["Blue", "Pink", "Orange", "Red"], correct: 3 }
         ]
       }
     ];
 
-    function loadQuizzes() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY_QUIZZES);
-        if (!raw) {
-          localStorage.setItem(STORAGE_KEY_QUIZZES, JSON.stringify(STARTER_QUIZZES));
-          return [...STARTER_QUIZZES];
+    let activeCategory = "all";
+    let currentQuiz = null;
+    let currentIndex = 0;
+    let score = 0;
+    let streak = 0;
+    let correctCount = 0;
+    let timerInterval = null;
+    let timeLeft = 15;
+    let isMuted = false;
+
+    // Web Audio SFX
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, type = "sine", duration = 0.15) {
+      if (isMuted) return;
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+    function toggleMute() {
+      isMuted = !isMuted;
+      document.getElementById("mute-btn").textContent = isMuted ? "🔇 Muted" : "🔊 SFX On";
+    }
+
+    function initUI() {
+      const genCat = document.getElementById("gen-category");
+      const studioCat = document.getElementById("studio-category");
+      const pillBar = document.getElementById("category-pills");
+
+      CATEGORIES.forEach(c => {
+        if (c.id !== "all") {
+          genCat.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+          studioCat.innerHTML += `<option value="${c.id}">${c.name}</option>`;
         }
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) && parsed.length > 0 ? parsed : [...STARTER_QUIZZES];
-      } catch (e) {
-        return [...STARTER_QUIZZES];
-      }
-    }
-
-    function saveQuizzesToStorage(list) {
-      try {
-        localStorage.setItem(STORAGE_KEY_QUIZZES, JSON.stringify(list));
-      } catch (e) {
-        showToast("Browser storage limit reached!", "error");
-      }
-    }
-
-    window.deleteCustomQuiz = function (quizId, event) {
-      event.stopPropagation();
-      playSound('click');
-      const updated = loadQuizzes().filter(q => q.id !== quizId);
-      saveQuizzesToStorage(updated);
-      renderLobby();
-      showToast("Custom quiz deleted.", "info");
-    };
-
-    /**
-     * ============================================================================
-     * 4. SPA NAVIGATION & LOBBY RENDERING
-     * ============================================================================
-     */
-    let activeCategory = 'All';
-
-    window.navigate = function (viewName) {
-      playSound('click');
-      clearInterval(gameState.timerInterval);
-      stopConfetti();
-
-      ['lobby', 'create', 'play', 'results'].forEach(v => {
-        const section = document.getElementById(`view-${v}`);
-        if (section) section.classList.add('hidden');
+        pillBar.innerHTML += `<button class="cat-pill ${c.id === 'all' ? 'active' : ''}" onclick="filterCategory('${c.id}', this)">${c.name}</button>`;
       });
 
-      const target = document.getElementById(`view-${viewName}`);
-      if (target) {
-        target.classList.remove('hidden');
-        target.classList.remove('animate-view');
-        void target.offsetWidth;
-        target.classList.add('animate-view');
-      }
-
-      if (viewName === 'lobby') {
-        renderLobby();
-      } else if (viewName === 'create') {
-        initQuizBuilder();
-      }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.filterCategory = function (category) {
-      playSound('click');
-      activeCategory = category;
-      document.querySelectorAll('.cat-pill').forEach(pill => {
-        if (pill.dataset.cat === category) {
-          pill.className = 'cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-cyber-cyan text-cyber-bg transition-all shrink-0';
-        } else {
-          pill.className = 'cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0';
-        }
-      });
-      renderLobby();
-    };
-
-    function renderLobby() {
-      const all = loadQuizzes();
-      const filtered = activeCategory === 'All'
-        ? all
-        : all.filter(q => q.category === activeCategory);
-
-      document.getElementById('quiz-count').textContent = filtered.length;
-      const grid = document.getElementById('quiz-grid');
-
-      if (filtered.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full rounded-3xl glass-card border-dashed p-12 text-center space-y-4">
-            <div class="w-14 h-14 mx-auto rounded-2xl bg-cyber-pink/15 text-cyber-pink flex items-center justify-center text-2xl">
-              <i class="fa-solid fa-ghost"></i>
-            </div>
-            <h3 class="font-display font-bold text-xl">No quizzes in "${escapeHTML(activeCategory)}" yet</h3>
-            <p class="text-slate-400 text-sm max-w-md mx-auto">Open the Quiz Studio and build the first deck in this category!</p>
-            <button onclick="navigate('create')" class="px-6 py-2.5 rounded-xl bg-cyber-pink text-white font-bold text-sm hover:opacity-90 transition-all">
-              Open Quiz Studio
-            </button>
-          </div>
-        `;
-      } else {
-        grid.innerHTML = filtered.map(quiz => {
-          const catStyle = quiz.category === 'Tech & Gaming' ? 'text-cyber-cyan bg-cyber-cyan/10 border-cyber-cyan/30'
-            : quiz.category === 'Science & Space' ? 'text-cyber-lime bg-cyber-lime/10 border-cyber-lime/30'
-            : quiz.category === 'World Trivia' ? 'text-cyber-purple bg-cyber-purple/10 border-cyber-purple/30'
-            : quiz.category === 'Pop Culture' ? 'text-cyber-amber bg-cyber-amber/10 border-cyber-amber/30'
-            : 'text-cyber-pink bg-cyber-pink/10 border-cyber-pink/30';
-
-          const diff = quiz.difficulty || 'Medium';
-          const diffColor = diff === 'Easy' ? 'text-cyber-lime' : diff === 'Hard' ? 'text-cyber-pink' : 'text-cyber-amber';
-
-          const deleteBtn = !quiz.isBuiltIn ? `
-            <button onclick="deleteCustomQuiz('${quiz.id}', event)" title="Delete Your Custom Quiz"
-              class="p-2 rounded-lg text-slate-400 hover:text-cyber-pink hover:bg-cyber-pink/10 transition-colors">
-              <i class="fa-solid fa-trash-can"></i>
-            </button>
-          ` : '';
-
-          return `
-            <div onclick="startQuiz('${quiz.id}')"
-              class="group cursor-pointer rounded-3xl glass-card hover:border-cyber-cyan p-6 flex flex-col justify-between gap-6 transition-all duration-200 hover:-translate-y-1.5 shadow-xl hover:shadow-cyber-cyan/20">
-              <div class="space-y-3">
-                <div class="flex items-center justify-between gap-2">
-                  <span class="px-3 py-1 rounded-full text-xs font-bold border ${catStyle}">
-                    ${escapeHTML(quiz.category)}
-                  </span>
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs font-extrabold uppercase tracking-wider ${diffColor}">
-                      ${escapeHTML(diff)}
-                    </span>
-                    ${deleteBtn}
-                  </div>
-                </div>
-                <h3 class="font-display font-bold text-xl text-white group-hover:text-cyber-cyan transition-colors line-clamp-2">
-                  ${escapeHTML(quiz.title)}
-                </h3>
-                <div class="flex items-center gap-2 text-xs text-slate-400">
-                  <i class="fa-solid fa-user-astronaut text-cyber-purple"></i>
-                  <span>By <strong class="text-slate-200">${escapeHTML(quiz.creator || 'PulseQuiz Arcade')}</strong></span>
-                </div>
-              </div>
-
-              <div class="pt-4 border-t border-cyber-border flex items-center justify-between">
-                <span class="text-xs font-semibold text-slate-400">
-                  <i class="fa-solid fa-layer-group text-cyber-pink mr-1.5"></i>
-                  ${quiz.questions.length} Question${quiz.questions.length === 1 ? '' : 's'}
-                </span>
-                <span class="inline-flex items-center gap-1.5 text-sm font-display font-extrabold text-cyber-cyan group-hover:translate-x-1 transition-transform">
-                  Play Arena <i class="fa-solid fa-play text-xs"></i>
-                </span>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-
-      renderLobbyLeaderboard();
+      renderQuizzes();
+      renderLeaderboard();
+      addStudioQuestion();
     }
 
-    function renderLobbyLeaderboard() {
-      const container = document.getElementById('lobby-leaderboard');
-      const scores = loadHighScores();
-      if (scores.length === 0) {
-        container.innerHTML = `
-          <div class="col-span-full text-center py-4 text-xs text-slate-400">
-            No arcade runs recorded yet. Play any quiz above to claim the #1 neon crown!
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = scores.map((s, idx) => `
-        <div class="p-3.5 rounded-2xl bg-cyber-bg/90 border ${idx === 0 ? 'border-cyber-amber/60' : 'border-cyber-border'} flex flex-col justify-between gap-2">
-          <div class="flex items-center justify-between">
-            <span class="px-2 py-0.5 rounded-md font-display font-extrabold text-xs ${idx === 0 ? 'bg-cyber-amber text-cyber-bg' : 'bg-cyber-card text-slate-300'}">
-              #${idx + 1}
-            </span>
-            <span class="font-display font-extrabold text-sm text-cyber-cyan">${s.score.toLocaleString()}</span>
-          </div>
-          <div class="flex items-center gap-2 min-w-0">
-            ${s.avatar ? `<img src="${escapeAttr(s.avatar)}" referrerpolicy="no-referrer" class="w-5 h-5 rounded-full border border-cyber-cyan shrink-0" alt="">` : ''}
-            <span class="text-xs font-bold text-white truncate">${escapeHTML(s.name)}</span>
-          </div>
-          <div class="text-[11px] text-slate-400 truncate">${escapeHTML(s.quizTitle)}</div>
-        </div>
-      `).join('');
+    function filterCategory(catId, btnEl) {
+      activeCategory = catId;
+      document.querySelectorAll(".cat-pill").forEach(b => b.classList.remove("active"));
+      if (btnEl) btnEl.classList.add("active");
+      renderQuizzes();
     }
 
-    /**
-     * ============================================================================
-     * 5. FULL QUIZ STUDIO BUILDER (A/B/C/D Selector, Reordering, Validation)
-     * ============================================================================
-     */
-    let builderQuestions = [];
-
-    function initQuizBuilder() {
-      document.getElementById('quiz-title-input').value = '';
-      document.getElementById('quiz-category-input').value = 'Custom';
-      document.getElementById('quiz-difficulty-input').value = 'Medium';
-      builderQuestions = [createEmptyQuestion()];
-      renderBuilderQuestions();
+    function getAllQuizzes() {
+      const custom = JSON.parse(localStorage.getItem("pulsequiz_custom") || "[]");
+      return [...custom, ...STARTER_QUIZZES];
     }
 
-    function createEmptyQuestion() {
-      return {
-        question: '',
-        options: ['', '', '', ''],
-        correctIndex: 0
-      };
-    }
+    function renderQuizzes() {
+      const grid = document.getElementById("quiz-grid");
+      const quizzes = getAllQuizzes().filter(q => activeCategory === "all" || q.category === activeCategory);
 
-    function syncBuilderState() {
-      builderQuestions.forEach((q, idx) => {
-        const promptEl = document.getElementById(`builder-q-text-${idx}`);
-        if (promptEl) q.question = promptEl.value;
-        for (let o = 0; o < 4; o++) {
-          const optEl = document.getElementById(`builder-q-${idx}-opt-${o}`);
-          if (optEl) q.options[o] = optEl.value;
-        }
-      });
-    }
-
-    window.addBuilderQuestion = function () {
-      playSound('click');
-      syncBuilderState();
-      builderQuestions.push(createEmptyQuestion());
-      renderBuilderQuestions();
-      showToast(`Question #${builderQuestions.length} added!`, "info");
-    };
-
-    window.removeBuilderQuestion = function (idx) {
-      playSound('click');
-      if (builderQuestions.length <= 1) {
-        showToast("Your quiz must have at least 1 question.", "error");
-        return;
-      }
-      syncBuilderState();
-      builderQuestions.splice(idx, 1);
-      renderBuilderQuestions();
-    };
-
-    window.moveBuilderQuestion = function (idx, direction) {
-      playSound('click');
-      syncBuilderState();
-      const targetIdx = idx + direction;
-      if (targetIdx < 0 || targetIdx >= builderQuestions.length) return;
-      const temp = builderQuestions[idx];
-      builderQuestions[idx] = builderQuestions[targetIdx];
-      builderQuestions[targetIdx] = temp;
-      renderBuilderQuestions();
-    };
-
-    window.setBuilderCorrect = function (qIdx, optIdx) {
-      playSound('click');
-      syncBuilderState();
-      builderQuestions[qIdx].correctIndex = optIdx;
-      renderBuilderQuestions();
-    };
-
-    function renderBuilderQuestions() {
-      const container = document.getElementById('builder-questions-list');
-      const letters = ['A', 'B', 'C', 'D'];
-
-      container.innerHTML = builderQuestions.map((q, qIdx) => {
-        const optionsMarkup = [0, 1, 2, 3].map(optIdx => {
-          const isCorrect = q.correctIndex === optIdx;
-          return `
-            <div class="flex items-center gap-2.5 p-2.5 rounded-2xl border transition-all ${isCorrect ? 'bg-cyber-lime/10 border-cyber-lime' : 'bg-cyber-bg/90 border-cyber-border'}">
-              <button type="button" onclick="setBuilderCorrect(${qIdx}, ${optIdx})"
-                title="Click to mark Option ${letters[optIdx]} as the correct answer"
-                class="w-9 h-9 rounded-xl font-display font-extrabold text-sm flex items-center justify-center shrink-0 transition-all ${isCorrect ? 'bg-cyber-lime text-cyber-bg shadow-md' : 'bg-cyber-card text-slate-300 hover:text-white border border-cyber-border'}">
-                ${isCorrect ? '<i class="fa-solid fa-check"></i>' : letters[optIdx]}
-              </button>
-              <input id="builder-q-${qIdx}-opt-${optIdx}" type="text"
-                value="${escapeAttr(q.options[optIdx])}"
-                placeholder="Option ${letters[optIdx]}..."
-                class="w-full bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none" />
-            </div>
-          `;
-        }).join('');
-
+      grid.innerHTML = quizzes.map(q => {
+        const catObj = CATEGORIES.find(c => c.id === q.category) || { name: q.category };
         return `
-          <div class="rounded-3xl glass-card p-6 space-y-5 shadow-xl">
-            <div class="flex items-center justify-between gap-2">
-              <span class="px-3 py-1 rounded-lg bg-cyber-purple/20 text-cyber-purple font-display font-extrabold text-xs uppercase tracking-wider">
-                Question ${qIdx + 1} of ${builderQuestions.length}
-              </span>
-              <div class="flex items-center gap-1.5">
-                <button type="button" onclick="moveBuilderQuestion(${qIdx}, -1)" ${qIdx === 0 ? 'disabled' : ''}
-                  title="Move Up"
-                  class="p-2 rounded-lg bg-cyber-bg border border-cyber-border text-slate-300 hover:text-cyber-cyan disabled:opacity-30 transition-colors">
-                  <i class="fa-solid fa-arrow-up text-xs"></i>
-                </button>
-                <button type="button" onclick="moveBuilderQuestion(${qIdx}, 1)" ${qIdx === builderQuestions.length - 1 ? 'disabled' : ''}
-                  title="Move Down"
-                  class="p-2 rounded-lg bg-cyber-bg border border-cyber-border text-slate-300 hover:text-cyber-cyan disabled:opacity-30 transition-colors">
-                  <i class="fa-solid fa-arrow-down text-xs"></i>
-                </button>
-                <button type="button" onclick="removeBuilderQuestion(${qIdx})"
-                  title="Delete Question"
-                  class="px-2.5 py-2 rounded-lg bg-cyber-bg border border-cyber-border text-slate-400 hover:text-cyber-pink text-xs font-bold transition-colors ml-1">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
+          <div class="quiz-card">
+            <div>
+              <div class="badge-row">
+                <span class="badge-cat">${catObj.name}</span>
+                <span class="badge-diff">${q.difficulty}</span>
               </div>
+              <h3>${q.title}</h3>
+              <p>${q.questions.length} Questions • By ${q.author || 'Agent'}</p>
             </div>
-
-            <div class="space-y-1.5">
-              <label for="builder-q-text-${qIdx}" class="block text-xs font-bold text-slate-300">Question Prompt *</label>
-              <input id="builder-q-text-${qIdx}" type="text"
-                value="${escapeAttr(q.question)}"
-                placeholder="Enter your trivia question..."
-                class="w-full px-4 py-3 rounded-xl bg-cyber-bg/90 border border-cyber-border text-white placeholder-slate-500 focus:outline-none focus:border-cyber-cyan transition-colors" />
-            </div>
-
-            <div class="space-y-2">
-              <div class="flex items-center justify-between text-xs">
-                <span class="text-slate-400 font-semibold">Click A, B, C, or D to highlight the correct answer</span>
-                <span class="font-bold text-cyber-lime">Answer: Option ${letters[q.correctIndex]}</span>
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                ${optionsMarkup}
-              </div>
-            </div>
+            <button class="btn-primary" style="width:100%;" onclick="startQuizById('${q.id}')">▶ Initialize</button>
           </div>
         `;
-      }).join('');
+      }).join("");
     }
 
-    window.saveCreatedQuiz = function () {
-      syncBuilderState();
+    function decodeHTML(html) {
+      const txt = document.createElement("textarea");
+      txt.innerHTML = html;
+      return txt.value;
+    }
 
-      const title = document.getElementById('quiz-title-input').value.trim();
-      const category = document.getElementById('quiz-category-input').value;
-      const difficulty = document.getElementById('quiz-difficulty-input').value;
+    async function generateInfiniteQuiz() {
+      const catId = document.getElementById("gen-category").value;
+      const diff = document.getElementById("gen-difficulty").value;
+      const amount = document.getElementById("gen-count").value;
+      const btn = document.getElementById("gen-btn");
 
-      if (!title) {
-        playSound('wrong');
-        showToast("Please give your quiz a title before publishing.", "error");
-        document.getElementById('quiz-title-input').focus();
-        return;
-      }
+      const catObj = CATEGORIES.find(c => c.id === catId) || CATEGORIES[1];
+      btn.disabled = true;
+      btn.textContent = "⏳ Generating...";
 
-      for (let i = 0; i < builderQuestions.length; i++) {
-        const q = builderQuestions[i];
-        if (!q.question.trim()) {
-          playSound('wrong');
-          showToast(`Question #${i + 1} needs a question prompt.`, "error");
+      let url = `https://opentdb.com/api.php?amount=${amount}&type=multiple`;
+      if (catObj.apiId) url += `&category=${catObj.apiId}`;
+      if (diff !== "any") url += `&difficulty=${diff}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.response_code === 0 && data.results.length > 0) {
+          const formatted = data.results.map(item => {
+            const allOpts = [...item.incorrect_answers.map(decodeHTML), decodeHTML(item.correct_answer)];
+            for (let i = allOpts.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [allOpts[i], allOpts[j]] = [allOpts[j], allOpts[i]];
+            }
+            return {
+              q: decodeHTML(item.question),
+              options: allOpts,
+              correct: allOpts.indexOf(decodeHTML(item.correct_answer))
+            };
+          });
+
+          btn.disabled = false;
+          btn.textContent = "🚀 Engage";
+          startQuiz({
+            id: "gen-" + Date.now(),
+            title: `${catObj.name} (${diff === 'any' ? 'Mixed' : diff.toUpperCase()})`,
+            category: catId,
+            difficulty: diff === "any" ? "Mixed" : diff.toUpperCase(),
+            author: "Holo-API",
+            questions: formatted
+          });
           return;
         }
-        for (let o = 0; o < 4; o++) {
-          if (!q.options[o].trim()) {
-            playSound('wrong');
-            showToast(`Please fill out all 4 options in Question #${i + 1}.`, "error");
-            return;
-          }
-        }
+      } catch (e) {
+        console.warn("API notice:", e);
       }
 
-      const creatorName = currentUser ? currentUser.displayName : 'Guest Creator';
-
-      const newDeck = {
-        id: 'custom_' + Date.now(),
-        title,
-        category,
-        difficulty,
-        isBuiltIn: false,
-        creator: creatorName,
-        questions: builderQuestions.map(q => ({
-          question: q.question.trim(),
-          options: q.options.map(opt => opt.trim()),
-          correctIndex: q.correctIndex
-        }))
-      };
-
-      const decks = loadQuizzes();
-      decks.unshift(newDeck);
-      saveQuizzesToStorage(decks);
-
-      playSound('win');
-      showToast(`"${title}" published by ${creatorName}!`, "success");
-
-      activeCategory = 'All';
-      document.querySelectorAll('.cat-pill').forEach(pill => {
-        pill.className = pill.dataset.cat === 'All'
-          ? 'cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-cyber-cyan text-cyber-bg transition-all shrink-0'
-          : 'cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold glass-card text-slate-300 hover:border-cyber-cyan transition-all shrink-0';
-      });
-
-      navigate('lobby');
-    };
-
-    /**
-     * ============================================================================
-     * 6. ARCADE GAMEPLAY ENGINE (15s Timer, Speed Bonus, 2x/3x/4x Streak Combos)
-     * ============================================================================
-     */
-    const QUESTION_SECONDS = 15;
-
-    let gameState = {
-      quiz: null,
-      currentIndex: 0,
-      score: 0,
-      totalSpeedBonus: 0,
-      streak: 0,
-      bestMultiplier: 1,
-      correctCount: 0,
-      timeLeft: QUESTION_SECONDS,
-      lastTick: QUESTION_SECONDS,
-      timerInterval: null,
-      answered: false
-    };
-
-    function getComboMultiplier(streak) {
-      if (streak >= 4) return 4;
-      if (streak === 3) return 3;
-      if (streak === 2) return 2;
-      return 1;
+      btn.disabled = false;
+      btn.textContent = "🚀 Engage";
+      const fallback = STARTER_QUIZZES.find(q => q.category === catId) || STARTER_QUIZZES[0];
+      startQuiz(fallback);
     }
 
-    window.startQuiz = function (quizId) {
-      const quiz = loadQuizzes().find(q => q.id === quizId);
-      if (!quiz) {
-        showToast("Quiz could not be loaded.", "error");
-        return;
-      }
+    function startQuizById(id) {
+      const found = getAllQuizzes().find(q => q.id === id);
+      if (found) startQuiz(found);
+    }
 
-      gameState = {
-        quiz,
-        currentIndex: 0,
-        score: 0,
-        totalSpeedBonus: 0,
-        streak: 0,
-        bestMultiplier: 1,
-        correctCount: 0,
-        timeLeft: QUESTION_SECONDS,
-        lastTick: QUESTION_SECONDS,
-        timerInterval: null,
-        answered: false
-      };
+    function startQuiz(quiz) {
+      currentQuiz = quiz;
+      currentIndex = 0;
+      score = 0;
+      streak = 0;
+      correctCount = 0;
 
-      navigate('play');
-      document.getElementById('play-quiz-title').textContent = quiz.title;
-      document.getElementById('play-q-total').textContent = quiz.questions.length;
-      renderPlayQuestion();
-    };
+      document.getElementById("play-box").style.display = "block";
+      document.getElementById("result-box").style.display = "none";
+      switchView("play");
+      loadQuestion();
+    }
 
-    window.exitQuiz = function () {
-      clearInterval(gameState.timerInterval);
-      navigate('lobby');
-    };
+    function replayCurrentQuiz() {
+      if (currentQuiz) startQuiz(currentQuiz);
+    }
 
-    function renderPlayQuestion() {
-      clearInterval(gameState.timerInterval);
-      gameState.answered = false;
-      gameState.timeLeft = QUESTION_SECONDS;
-      gameState.lastTick = QUESTION_SECONDS;
+    function loadQuestion() {
+      clearInterval(timerInterval);
+      const qObj = currentQuiz.questions[currentIndex];
+      const total = currentQuiz.questions.length;
 
-      const qObj = gameState.quiz.questions[gameState.currentIndex];
-      const mult = getComboMultiplier(gameState.streak);
+      document.getElementById("hud-progress").textContent = `QUESTION ${currentIndex + 1} / ${total}`;
+      const mult = Math.min(4, 1 + Math.floor(streak / 2));
+      document.getElementById("hud-streak").textContent = `🔥 STREAK: ${streak} (${mult}x)`;
+      document.getElementById("hud-score").textContent = `SCORE: ${score}`;
+      document.getElementById("question-text").textContent = qObj.q;
 
-      document.getElementById('play-q-current').textContent = gameState.currentIndex + 1;
-      document.getElementById('play-score').textContent = gameState.score.toLocaleString();
-      document.getElementById('play-streak').textContent = gameState.streak;
-      document.getElementById('play-multiplier').textContent = `${mult}x`;
-      document.getElementById('play-question-text').textContent = qObj.question;
-      document.getElementById('play-feedback-area').classList.add('hidden');
+      const panel = document.getElementById("play-box");
+      if (streak >= 3) panel.classList.add("overdrive");
+      else panel.classList.remove("overdrive");
 
-      const letters = ['A', 'B', 'C', 'D'];
-      const grid = document.getElementById('play-options-grid');
+      const letters = ["A", "B", "C", "D"];
+      const grid = document.getElementById("options-grid");
       grid.innerHTML = qObj.options.map((opt, idx) => `
-        <button onclick="selectPlayOption(${idx})"
-          class="play-opt-btn group text-left p-4 sm:p-5 rounded-2xl bg-cyber-bg/90 border-2 border-cyber-border hover:border-cyber-cyan transition-all flex items-center gap-3.5 focus:outline-none">
-          <span class="w-9 h-9 rounded-xl glass-card group-hover:border-cyber-cyan group-hover:text-cyber-cyan font-display font-extrabold text-sm flex items-center justify-center shrink-0 transition-colors">
-            ${letters[idx]}
-          </span>
-          <span class="font-semibold text-sm sm:text-base text-slate-100">${escapeHTML(opt)}</span>
+        <button class="option-btn" onclick="selectAnswer(${idx}, this)">
+          <span class="opt-letter">${letters[idx]}</span>
+          <span>${opt}</span>
         </button>
-      `).join('');
+      `).join("");
 
-      updateTimerDisplay();
-      gameState.timerInterval = setInterval(() => {
-        gameState.timeLeft -= 0.1;
-        const secCeil = Math.ceil(gameState.timeLeft);
-        if (secCeil <= 4 && secCeil > 0 && secCeil < gameState.lastTick) {
-          gameState.lastTick = secCeil;
-          playSound('tick');
-        }
-        if (gameState.timeLeft <= 0) {
-          gameState.timeLeft = 0;
-          updateTimerDisplay();
-          clearInterval(gameState.timerInterval);
+      timeLeft = 15;
+      const fill = document.getElementById("timer-fill");
+      fill.style.width = "100%";
+
+      timerInterval = setInterval(() => {
+        timeLeft -= 0.1;
+        fill.style.width = Math.max(0, (timeLeft / 15) * 100) + "%";
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
           handleTimeout();
-        } else {
-          updateTimerDisplay();
         }
       }, 100);
     }
 
-    function updateTimerDisplay() {
-      const pct = Math.max(0, (gameState.timeLeft / QUESTION_SECONDS) * 100);
-      const bar = document.getElementById('play-timer-bar');
-      const txt = document.getElementById('play-timer-text');
-
-      bar.style.width = `${pct}%`;
-      txt.textContent = `${Math.ceil(gameState.timeLeft)}s`;
-
-      if (gameState.timeLeft <= 4) {
-        txt.className = 'text-cyber-pink animate-pulse';
-      } else {
-        txt.className = 'text-cyber-cyan';
-      }
-    }
-
-    window.selectPlayOption = function (selectedIdx) {
-      if (gameState.answered) return;
-      gameState.answered = true;
-      clearInterval(gameState.timerInterval);
-
-      const qObj = gameState.quiz.questions[gameState.currentIndex];
-      const isCorrect = selectedIdx === qObj.correctIndex;
-
-      document.querySelectorAll('.play-opt-btn').forEach((btn, idx) => {
-        btn.disabled = true;
-        btn.classList.remove('hover:border-cyber-cyan');
-
-        if (idx === qObj.correctIndex) {
-          btn.className = 'play-opt-btn text-left p-4 sm:p-5 rounded-2xl bg-cyber-lime/15 border-2 border-cyber-lime flex items-center gap-3.5 shadow-lg animate-pop';
-        } else if (idx === selectedIdx && !isCorrect) {
-          btn.className = 'play-opt-btn text-left p-4 sm:p-5 rounded-2xl bg-cyber-pink/15 border-2 border-cyber-pink flex items-center gap-3.5 animate-shake';
-        } else {
-          btn.className = 'play-opt-btn text-left p-4 sm:p-5 rounded-2xl bg-cyber-bg/40 border-2 border-cyber-border/40 opacity-45 flex items-center gap-3.5';
-        }
-      });
-
-      const feedbackMsg = document.getElementById('play-feedback-msg');
-
-      if (isCorrect) {
-        gameState.streak += 1;
-        gameState.correctCount += 1;
-        const mult = getComboMultiplier(gameState.streak);
-        if (mult > gameState.bestMultiplier) gameState.bestMultiplier = mult;
-
-        if (mult >= 2) {
-          playSound('streak');
-        } else {
-          playSound('correct');
-        }
-
-        const speedBonus = Math.round(gameState.timeLeft * 25);
-        const earned = (500 + speedBonus) * mult;
-        gameState.score += earned;
-        gameState.totalSpeedBonus += speedBonus * mult;
-
-        const badge = document.getElementById('streak-badge');
-        badge.classList.remove('animate-pop');
-        void badge.offsetWidth;
-        badge.classList.add('animate-pop');
-
-        feedbackMsg.innerHTML = `<span class="text-cyber-lime"><i class="fa-solid fa-circle-check mr-1.5"></i> +${earned.toLocaleString()} PTS (${mult}x Combo • +${speedBonus} Speed!)</span>`;
-      } else {
-        playSound('wrong');
-        gameState.streak = 0;
-        feedbackMsg.innerHTML = `<span class="text-cyber-pink"><i class="fa-solid fa-circle-xmark mr-1.5"></i> Wrong! Answer: ${escapeHTML(qObj.options[qObj.correctIndex])}</span>`;
-      }
-
-      document.getElementById('play-score').textContent = gameState.score.toLocaleString();
-      document.getElementById('play-streak').textContent = gameState.streak;
-      document.getElementById('play-multiplier').textContent = `${getComboMultiplier(gameState.streak)}x`;
-
-      const nextBtn = document.getElementById('play-next-btn');
-      nextBtn.innerHTML = gameState.currentIndex + 1 >= gameState.quiz.questions.length
-        ? `See Final Results <i class="fa-solid fa-trophy ml-1.5"></i>`
-        : `Next Question <i class="fa-solid fa-arrow-right ml-1.5"></i>`;
-
-      document.getElementById('play-feedback-area').classList.remove('hidden');
-    };
-
     function handleTimeout() {
-      if (gameState.answered) return;
-      gameState.answered = true;
-      playSound('wrong');
-      gameState.streak = 0;
-
-      const qObj = gameState.quiz.questions[gameState.currentIndex];
-      document.querySelectorAll('.play-opt-btn').forEach((btn, idx) => {
-        btn.disabled = true;
-        if (idx === qObj.correctIndex) {
-          btn.className = 'play-opt-btn text-left p-4 sm:p-5 rounded-2xl bg-cyber-lime/15 border-2 border-cyber-lime flex items-center gap-3.5';
-        } else {
-          btn.className = 'play-opt-btn text-left p-4 sm:p-5 rounded-2xl bg-cyber-bg/40 border-2 border-cyber-border/40 opacity-45 flex items-center gap-3.5';
-        }
+      streak = 0;
+      playTone(180, "sawtooth", 0.3);
+      const qObj = currentQuiz.questions[currentIndex];
+      const btns = document.querySelectorAll(".option-btn");
+      btns.forEach((b, i) => {
+        b.disabled = true;
+        if (i === qObj.correct) b.classList.add("correct");
       });
-
-      document.getElementById('play-streak').textContent = 0;
-      document.getElementById('play-multiplier').textContent = '1x';
-      document.getElementById('play-feedback-msg').innerHTML = `<span class="text-cyber-amber"><i class="fa-solid fa-hourglass-end mr-1.5"></i> Time's Up! Answer: ${escapeHTML(qObj.options[qObj.correctIndex])}</span>`;
-      document.getElementById('play-feedback-area').classList.remove('hidden');
+      setTimeout(nextQuestion, 1200);
     }
 
-    window.nextQuestion = function () {
-      playSound('click');
-      if (gameState.currentIndex + 1 < gameState.quiz.questions.length) {
-        gameState.currentIndex += 1;
-        renderPlayQuestion();
+    function selectAnswer(idx, btn) {
+      clearInterval(timerInterval);
+      const qObj = currentQuiz.questions[currentIndex];
+      const btns = document.querySelectorAll(".option-btn");
+      btns.forEach(b => b.disabled = true);
+
+      if (idx === qObj.correct) {
+        btn.classList.add("correct");
+        streak++;
+        correctCount++;
+        const mult = Math.min(4, 1 + Math.floor(streak / 2));
+        const speedBonus = Math.round(timeLeft * 10);
+        score += (100 + speedBonus) * mult;
+        playTone(620, "triangle", 0.12);
+        setTimeout(() => playTone(880, "triangle", 0.18), 90);
+      } else {
+        btn.classList.add("wrong");
+        btns[qObj.correct].classList.add("correct");
+        streak = 0;
+        playTone(170, "sawtooth", 0.3);
+      }
+
+      setTimeout(nextQuestion, 1100);
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      if (currentIndex < currentQuiz.questions.length) {
+        loadQuestion();
       } else {
         finishQuiz();
       }
-    };
+    }
 
-    /**
-     * ============================================================================
-     * 7. RESULTS SUMMARY, CONFETTI CELEBRATION & TOP-5 LEADERBOARD
-     * ============================================================================
-     */
     function finishQuiz() {
-      playSound('win');
-      const total = gameState.quiz.questions.length;
-      const accuracy = Math.round((gameState.correctCount / total) * 100);
+      document.getElementById("play-box").style.display = "none";
+      document.getElementById("result-box").style.display = "block";
+      document.getElementById("play-box").classList.remove("overdrive");
+      document.getElementById("result-summary").textContent =
+        `You answered ${correctCount} of ${currentQuiz.questions.length} correctly in ${currentQuiz.title}!`;
+      document.getElementById("final-score").textContent = `${score} PTS`;
 
-      const playerName = currentUser ? currentUser.displayName : 'Guest Runner';
-      const playerAvatar = currentUser ? currentUser.photoURL : null;
+      saveHighScore(score, currentQuiz.title);
+      launchConfetti();
+      playTone(523, "triangle", 0.15);
+      setTimeout(() => playTone(659, "triangle", 0.15), 120);
+      setTimeout(() => playTone(784, "triangle", 0.3), 240);
+    }
 
-      const highScores = loadHighScores();
-      highScores.push({
-        name: playerName,
-        avatar: playerAvatar,
-        quizTitle: gameState.quiz.title,
-        score: gameState.score,
-        accuracy
-      });
-      highScores.sort((a, b) => b.score - a.score);
-      const top5 = highScores.slice(0, 5);
-      localStorage.setItem(STORAGE_KEY_SCORES, JSON.stringify(top5));
+    function saveHighScore(pts, quizTitle) {
+      if (pts <= 0) return;
+      const lb = JSON.parse(localStorage.getItem("pulsequiz_lb") || "[]");
+      const name = window.currentUser ? window.currentUser.displayName : "Agent Guest";
+      lb.push({ name, pts, quizTitle, date: new Date().toLocaleDateString() });
+      lb.sort((a, b) => b.pts - a.pts);
+      localStorage.setItem("pulsequiz_lb", JSON.stringify(lb.slice(0, 5)));
+      renderLeaderboard();
+    }
 
-      navigate('results');
-
-      if (accuracy >= 50) {
-        launchConfetti();
+    function renderLeaderboard() {
+      const lb = JSON.parse(localStorage.getItem("pulsequiz_lb") || "[]");
+      const list = document.getElementById("leaderboard-list");
+      if (lb.length === 0) {
+        list.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">No entries logged. Complete any quiz to claim rank #1!</p>`;
+        return;
       }
-
-      document.getElementById('result-score').textContent = gameState.score.toLocaleString();
-      document.getElementById('result-accuracy').textContent = `${accuracy}%`;
-      document.getElementById('result-streak').textContent = `${gameState.bestMultiplier}x`;
-      document.getElementById('result-speed-bonus').textContent = `+${gameState.totalSpeedBonus.toLocaleString()}`;
-
-      if (accuracy === 100) {
-        document.getElementById('result-title').textContent = 'Flawless Overdrive!';
-        document.getElementById('result-subtitle').textContent = `100% perfection on "${gameState.quiz.title}".`;
-      } else if (accuracy >= 70) {
-        document.getElementById('result-title').textContent = 'Neon Champion!';
-        document.getElementById('result-subtitle').textContent = `Blazing run through "${gameState.quiz.title}"!`;
-      } else {
-        document.getElementById('result-title').textContent = 'Arena Run Complete';
-        document.getElementById('result-subtitle').textContent = `Replay "${gameState.quiz.title}" to push your combo multiplier higher!`;
-      }
-
-      document.getElementById('replay-btn').onclick = () => startQuiz(gameState.quiz.id);
-
-      const lbList = document.getElementById('leaderboard-list');
-      lbList.innerHTML = top5.map((entry, idx) => `
-        <div class="flex items-center justify-between px-3.5 py-2.5 rounded-xl glass-card">
-          <div class="flex items-center gap-3 min-w-0">
-            <span class="w-6 h-6 rounded-lg font-display font-extrabold text-xs flex items-center justify-center shrink-0 ${idx === 0 ? 'bg-cyber-amber text-cyber-bg' : 'bg-cyber-bg text-slate-400'}">
-              #${idx + 1}
-            </span>
-            ${entry.avatar ? `<img src="${escapeAttr(entry.avatar)}" referrerpolicy="no-referrer" class="w-6 h-6 rounded-full border border-cyber-cyan shrink-0" alt="">` : ''}
-            <div class="truncate">
-              <div class="font-bold text-white truncate">${escapeHTML(entry.name)}</div>
-              <div class="text-[11px] text-slate-400 truncate">${escapeHTML(entry.quizTitle)} • ${entry.accuracy}%</div>
-            </div>
+      list.innerHTML = lb.map((entry, i) => `
+        <div class="lb-row">
+          <div>
+            <strong style="color: var(--holo-cyan); margin-right: 8px; font-family:'Orbitron',sans-serif;">#${i + 1}</strong>
+            <span>${entry.name}</span>
+            <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 8px;">(${entry.quizTitle})</span>
           </div>
-          <div class="font-display font-extrabold text-cyber-cyan shrink-0 ml-2">
-            ${entry.score.toLocaleString()} PTS
-          </div>
+          <strong style="color: var(--holo-gold); font-family:'Orbitron',sans-serif;">${entry.pts} PTS</strong>
         </div>
-      `).join('');
+      `).join("");
     }
 
-    function loadHighScores() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY_SCORES);
-        return raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        return [];
-      }
+    let studioCount = 0;
+    function addStudioQuestion() {
+      studioCount++;
+      const container = document.getElementById("studio-questions");
+      const div = document.createElement("div");
+      div.className = "q-builder-item";
+      div.dataset.correct = "0";
+      div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <strong style="color:var(--holo-cyan); font-family:'Orbitron',sans-serif;">QUESTION #${studioCount}</strong>
+          <button class="btn-nav" style="padding:4px 10px; font-size:0.7rem; color:var(--holo-pink);" onclick="this.closest('.q-builder-item').remove()">✕ Remove</button>
+        </div>
+        <input type="text" class="sq-prompt" style="width:100%;" placeholder="Enter question prompt..." />
+        <div class="ans-row">
+          <input type="text" class="sq-opt" placeholder="Option A" />
+          <input type="text" class="sq-opt" placeholder="Option B" />
+          <input type="text" class="sq-opt" placeholder="Option C" />
+          <input type="text" class="sq-opt" placeholder="Option D" />
+        </div>
+        <div class="correct-picker">
+          <span style="font-size:0.85rem; color:var(--text-muted);">Correct Answer:</span>
+          ${["A", "B", "C", "D"].map((ltr, idx) => `
+            <button type="button" class="pick-btn ${idx === 0 ? 'selected' : ''}" onclick="setCorrectOpt(this, ${idx})">${ltr}</button>
+          `).join("")}
+        </div>
+      `;
+      container.appendChild(div);
     }
 
-    /**
-     * ============================================================================
-     * 8. CONFETTI PARTICLE CELEBRATION & TOAST NOTIFICATIONS
-     * ============================================================================
-     */
-    let confettiAnimId = null;
+    function setCorrectOpt(btn, idx) {
+      const parent = btn.closest(".q-builder-item");
+      parent.dataset.correct = idx;
+      parent.querySelectorAll(".pick-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    }
+
+    function saveStudioQuiz() {
+      const title = document.getElementById("studio-title").value.trim();
+      const category = document.getElementById("studio-category").value;
+      const difficulty = document.getElementById("studio-diff").value;
+      const items = document.querySelectorAll(".q-builder-item");
+
+      if (!title) return alert("Please enter a quiz title!");
+      const questions = [];
+
+      items.forEach(item => {
+        const q = item.querySelector(".sq-prompt").value.trim();
+        const opts = Array.from(item.querySelectorAll(".sq-opt")).map(i => i.value.trim());
+        const correct = parseInt(item.dataset.correct, 10);
+        if (q && opts.every(o => o.length > 0)) {
+          questions.push({ q, options: opts, correct });
+        }
+      });
+
+      if (questions.length === 0) return alert("Please fill in at least 1 complete question with 4 options!");
+
+      const custom = JSON.parse(localStorage.getItem("pulsequiz_custom") || "[]");
+      custom.unshift({
+        id: "custom-" + Date.now(),
+        title,
+        category,
+        difficulty,
+        author: window.currentUser ? window.currentUser.displayName : "Creator",
+        questions
+      });
+      localStorage.setItem("pulsequiz_custom", JSON.stringify(custom));
+
+      document.getElementById("studio-title").value = "";
+      document.getElementById("studio-questions").innerHTML = "";
+      studioCount = 0;
+      addStudioQuestion();
+      renderQuizzes();
+      switchView("lobby");
+    }
+
+    function switchView(viewName) {
+      clearInterval(timerInterval);
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.querySelectorAll(".btn-nav").forEach(b => b.classList.remove("active"));
+      document.getElementById("view-" + viewName).classList.add("active");
+      const navBtn = document.getElementById("nav-" + viewName);
+      if (navBtn) navBtn.classList.add("active");
+    }
 
     function launchConfetti() {
-      const canvas = document.getElementById('confetti-canvas');
-      const ctx = canvas.getContext('2d');
+      const canvas = document.getElementById("confetti-canvas");
+      const ctx = canvas.getContext("2d");
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-
-      const colors = ['#ff2a85', '#00f0ff', '#9d4edd', '#39ff14', '#ffb703'];
-      const particles = Array.from({ length: 110 }, () => ({
+      const colors = ["#00f0ff", "#ff007f", "#00ff66", "#ffcc00", "#bd00ff"];
+      const pieces = Array.from({ length: 90 }, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height - canvas.height,
-        w: Math.random() * 10 + 5,
-        h: Math.random() * 6 + 4,
+        w: Math.random() * 8 + 4,
+        h: Math.random() * 8 + 4,
         color: colors[Math.floor(Math.random() * colors.length)],
-        vy: Math.random() * 3.5 + 2,
-        vx: (Math.random() - 0.5) * 2.5,
-        rot: Math.random() * 360,
-        vRot: (Math.random() - 0.5) * 8
+        vy: Math.random() * 4 + 2,
+        vx: (Math.random() - 0.5) * 3
       }));
 
       let frames = 0;
       function draw() {
-        frames++;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => {
-          p.y += p.vy;
+        pieces.forEach(p => {
           p.x += p.vx;
-          p.rot += p.vRot;
-          ctx.save();
-          ctx.translate(p.x, p.y);
-          ctx.rotate((p.rot * Math.PI) / 180);
+          p.y += p.vy;
           ctx.fillStyle = p.color;
-          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-          ctx.restore();
+          ctx.fillRect(p.x, p.y, p.w, p.h);
         });
-        if (frames < 220) {
-          confettiAnimId = requestAnimationFrame(draw);
-        } else {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+        frames++;
+        if (frames < 140) requestAnimationFrame(draw);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
-      cancelAnimationFrame(confettiAnimId);
       draw();
     }
 
-    function stopConfetti() {
-      cancelAnimationFrame(confettiAnimId);
-      const canvas = document.getElementById('confetti-canvas');
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
-    }
-
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-
-      const borderStyle = type === 'error'
-        ? 'border-cyber-pink'
-        : type === 'success'
-        ? 'border-cyber-lime'
-        : 'border-cyber-cyan';
-
-      const iconHTML = type === 'error'
-        ? '<i class="fa-solid fa-circle-exclamation text-cyber-pink"></i>'
-        : type === 'success'
-        ? '<i class="fa-solid fa-circle-check text-cyber-lime"></i>'
-        : '<i class="fa-solid fa-bolt text-cyber-cyan"></i>';
-
-      toast.className = `pointer-events-auto p-4 rounded-2xl glass-card border-2 ${borderStyle} text-white shadow-2xl flex items-center gap-3 text-sm font-medium animate-view`;
-      toast.innerHTML = `${iconHTML} <span class="flex-1">${escapeHTML(message)}</span>`;
-
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(10px)';
-        toast.style.transition = 'all 0.25s ease';
-        setTimeout(() => toast.remove(), 250);
-      }, 4200);
-    }
-
-    function escapeHTML(str) {
-      if (typeof str !== 'string') return '';
-      return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function escapeAttr(str) {
-      return escapeHTML(str);
-    }
-
-    // Initialize Lobby & Auth UI on load
-    renderAuthUI();
-    renderLobby();
+    initUI();
   </script>
 </body>
 </html>
