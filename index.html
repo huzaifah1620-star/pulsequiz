@@ -36,7 +36,6 @@
       position: relative;
     }
 
-    /* Cyberpunk Scanlines & Holo Grid */
     .scanlines {
       position: fixed;
       inset: 0;
@@ -64,7 +63,6 @@
       100% { background-position: 50px 50px; }
     }
 
-    /* Starfield Canvas */
     #starfield {
       position: fixed;
       inset: 0;
@@ -72,7 +70,6 @@
       pointer-events: none;
     }
 
-    /* Header HUD */
     header {
       display: flex;
       justify-content: space-between;
@@ -167,7 +164,6 @@
       border-radius: 50%;
     }
 
-    /* Main Container */
     main {
       max-width: 1120px;
       margin: 0 auto;
@@ -182,7 +178,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Holographic Generator Box */
     .generator-box {
       background: linear-gradient(135deg, rgba(8, 7, 24, 0.95), rgba(22, 6, 32, 0.9));
       border: 1px solid var(--holo-pink);
@@ -190,7 +185,6 @@
       padding: 24px;
       margin-bottom: 24px;
       box-shadow: 0 0 30px rgba(255, 0, 127, 0.2), inset 0 0 15px rgba(255, 0, 127, 0.1);
-      position: relative;
     }
 
     .generator-header {
@@ -256,7 +250,6 @@
       box-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
     }
 
-    /* Category Filter Pills */
     .category-bar {
       display: flex;
       gap: 8px;
@@ -283,7 +276,6 @@
       box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
     }
 
-    /* Quiz Cards Grid */
     .quiz-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
@@ -299,7 +291,6 @@
       flex-direction: column;
       justify-content: space-between;
       transition: all 0.2s ease;
-      position: relative;
     }
 
     .quiz-card:hover {
@@ -336,12 +327,11 @@
     }
 
     .quiz-card p {
-      font-size: 0.95srem;
+      font-size: 0.95rem;
       color: var(--text-muted);
       margin-bottom: 16px;
     }
 
-    /* Arcade Play Screen */
     .arcade-panel {
       max-width: 720px;
       margin: 0 auto;
@@ -350,10 +340,8 @@
       border-radius: 18px;
       padding: 28px;
       box-shadow: 0 0 35px rgba(0, 240, 255, 0.2);
-      position: relative;
     }
 
-    /* Overdrive Mode Glow */
     .arcade-panel.overdrive {
       border-color: var(--holo-pink);
       box-shadow: 0 0 50px rgba(255, 0, 127, 0.4);
@@ -450,7 +438,6 @@
       flex-shrink: 0;
     }
 
-    /* Studio Builder */
     .studio-card {
       background: var(--hud-panel);
       border: 1px solid var(--hud-border);
@@ -535,7 +522,6 @@
   </header>
 
   <main>
-    <!-- LOBBY VIEW -->
     <section id="view-lobby" class="view active">
       <div class="generator-box">
         <div class="generator-header">
@@ -562,20 +548,15 @@
         </div>
       </div>
 
-      <!-- Category Filter Pills -->
       <div class="category-bar" id="category-pills"></div>
-
-      <!-- Quiz Cards Grid -->
       <div class="quiz-grid" id="quiz-grid"></div>
 
-      <!-- Leaderboard -->
       <div class="studio-card" style="margin-top: 30px;">
         <h3 style="margin-bottom: 14px; font-family: 'Orbitron', sans-serif; color: var(--holo-gold); font-size: 1.1rem;">🏆 Holo-Deck Top High Scores</h3>
         <div id="leaderboard-list"></div>
       </div>
     </section>
 
-    <!-- PLAY VIEW -->
     <section id="view-play" class="view">
       <div class="arcade-panel" id="play-box">
         <div class="hud-bar">
@@ -588,7 +569,6 @@
         <div class="options-grid" id="options-grid"></div>
       </div>
 
-      <!-- Results Panel -->
       <div class="arcade-panel" id="result-box" style="display: none; text-align: center;">
         <h2 style="font-family: 'Orbitron', sans-serif; font-size: 1.8rem; margin-bottom: 10px; color: var(--holo-cyan);">SESSION COMPLETE</h2>
         <p id="result-summary" style="color: var(--text-muted); margin-bottom: 20px; font-size: 1.1rem;"></p>
@@ -601,7 +581,6 @@
       </div>
     </section>
 
-    <!-- STUDIO VIEW -->
     <section id="view-studio" class="view">
       <div class="studio-card">
         <h2 style="font-family: 'Orbitron', sans-serif; margin-bottom: 6px; color: var(--holo-cyan);">🛠️ Custom Quiz Studio</h2>
@@ -627,62 +606,58 @@
     </section>
   </main>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDK with your real credentials -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyDummyKeyReplaceIfNeeded",
+      apiKey: "AIzaSyCeN3pbvANI4qqdaivt4CKlD4PNcqcEDl4",
       authDomain: "pulsequiz-a5da1.firebaseapp.com",
       projectId: "pulsequiz-a5da1",
-      storageBucket: "pulsequiz-a5da1.appspot.com",
-      messagingSenderId: "102938475610",
-      appId: "1:102938475610:web:abcdef123456"
+      storageBucket: "pulsequiz-a5da1.firebasestorage.app",
+      messagingSenderId: "668679540827",
+      appId: "1:668679540827:web:67202298f3821197fc6f7e",
+      measurementId: "G-K46F6R2GC5"
     };
 
-    let auth, provider;
-    try {
-      const app = initializeApp(firebaseConfig);
-      auth = getAuth(app);
-      provider = new GoogleAuthProvider();
-    } catch (e) {
-      console.warn("Firebase notice:", e);
-    }
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
 
     window.currentUser = null;
     window.signInGoogle = async () => {
-      if (!auth) return alert("Firebase Auth is initializing.");
-      try { await signInWithPopup(auth, provider); } catch (err) { alert("Notice: " + err.message); }
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (err) {
+        alert("Login notice: " + err.message);
+      }
     };
-    window.signOutGoogle = async () => { if (auth) await signOut(auth); };
+    window.signOutGoogle = async () => { await signOut(auth); };
 
-    if (auth) {
-      onAuthStateChanged(auth, (user) => {
-        window.currentUser = user;
-        const authArea = document.getElementById("auth-area");
-        if (user) {
-          authArea.innerHTML = `
-            <div class="user-chip">
-              <img src="${user.photoURL || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + user.uid}" alt="avatar" />
-              <span>${user.displayName || 'Agent'}</span>
-              <button class="btn-nav" style="padding:4px 10px; font-size:0.7rem;" onclick="signOutGoogle()">Exit</button>
-            </div>
-          `;
-        } else {
-          authArea.innerHTML = `
-            <button class="btn-google" onclick="signInGoogle()">
-              <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-              Google Login
-            </button>
-          `;
-        }
-      });
-    }
+    onAuthStateChanged(auth, (user) => {
+      window.currentUser = user;
+      const authArea = document.getElementById("auth-area");
+      if (user) {
+        authArea.innerHTML = `
+          <div class="user-chip">
+            <img src="${user.photoURL || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + user.uid}" alt="avatar" />
+            <span>${user.displayName || 'Agent'}</span>
+            <button class="btn-nav" style="padding:4px 10px; font-size:0.7rem;" onclick="signOutGoogle()">Exit</button>
+          </div>
+        `;
+      } else {
+        authArea.innerHTML = `
+          <button class="btn-google" onclick="signInGoogle()">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Google Login
+          </button>
+        `;
+      }
+    });
   </script>
 
   <script>
-    // Starfield Background Animation
     const starCanvas = document.getElementById("starfield");
     const starCtx = starCanvas.getContext("2d");
     function resizeStars() {
@@ -711,7 +686,6 @@
     }
     animateStars();
 
-    // Categories & Starters
     const CATEGORIES = [
       { id: "all", name: "🌐 All Categories", apiId: "" },
       { id: "general", name: "🧠 General Knowledge", apiId: "9" },
@@ -778,7 +752,6 @@
     let timeLeft = 15;
     let isMuted = false;
 
-    // Web Audio SFX
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playTone(freq, type = "sine", duration = 0.15) {
       if (isMuted) return;
