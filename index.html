@@ -15,8 +15,8 @@
       --holo-purple: #bd00ff;
       --holo-lime: #00ff66;
       --holo-gold: #ffcc00;
-      --hud-panel: rgba(8, 7, 20, 0.85);
-      --hud-border: rgba(0, 240, 255, 0.35);
+      --hud-panel: rgba(8, 7, 20, 0.88);
+      --hud-border: rgba(0, 240, 255, 0.4);
       --text-main: #e2e8f0;
       --text-muted: #94a3b8;
     }
@@ -43,7 +43,7 @@
       background-size: 100% 4px;
       z-index: 100;
       pointer-events: none;
-      opacity: 0.6;
+      opacity: 0.5;
     }
 
     .cyber-horizon {
@@ -705,6 +705,19 @@
 
     const STARTER_QUIZZES = [
       {
+        id: "starter-cars",
+        title: "Supercar & Automotive Speedrun",
+        category: "cars",
+        difficulty: "Medium",
+        author: "PulseNet AI",
+        questions: [
+          { q: "Which car manufacturer produces the 911 model?", options: ["Ferrari", "Porsche", "Lamborghini", "Aston Martin"], correct: 1 },
+          { q: "What does ABS stand for in automotive safety?", options: ["Anti-lock Braking System", "Automatic Balancer Suspension", "Active Brake Steering", "Aerodynamic Body Shell"], correct: 0 },
+          { q: "Which Italian brand has a prancing horse as its logo?", options: ["Maserati", "Alfa Romeo", "Ferrari", "Bugatti"], correct: 2 },
+          { q: "What fuel type uses spark plugs to ignite fuel?", options: ["Diesel", "Gasoline / Petrol", "Hydrogen Fuel Cell", "Electric Battery"], correct: 1 }
+        ]
+      },
+      {
         id: "starter-tech",
         title: "Cyber & Code Speedrun",
         category: "tech",
@@ -727,18 +740,6 @@
           { q: "Which planet has the most moons in our solar system?", options: ["Jupiter", "Saturn", "Uranus", "Neptune"], correct: 1 },
           { q: "What is the chemical symbol for Gold?", options: ["Gd", "Go", "Au", "Ag"], correct: 2 },
           { q: "What is the speed of light in a vacuum (approx)?", options: ["300,000 km/s", "150,000 km/s", "30,000 km/s", "3,000,000 km/s"], correct: 0 }
-        ]
-      },
-      {
-        id: "starter-gaming",
-        title: "Arcade Legends Arena",
-        category: "gaming",
-        difficulty: "Easy",
-        author: "PulseNet AI",
-        questions: [
-          { q: "What is the best-selling video game of all time?", options: ["Tetris", "Minecraft", "GTA V", "Wii Sports"], correct: 1 },
-          { q: "Who is the protagonist in The Legend of Zelda?", options: ["Zelda", "Ganon", "Link", "Epona"], correct: 2 },
-          { q: "In Pac-Man, what color is Blinky?", options: ["Blue", "Pink", "Orange", "Red"], correct: 3 }
         ]
       }
     ];
